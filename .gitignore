@@ -24,5 +24,9 @@ lib/bs
 .vscode
 .merlin
 .bsb.lock
+*.bs.js
+
+/dist
 
 /node_modules
+.cache/

@@ -4,7 +4,7 @@
   "description": "A Graph Visualization Framework in ReasonML",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "clean": "bsb -clean-world",
     "build": "bsb -make-world",
     "watch": "bsb -make-world -w",
@@ -27,14 +27,17 @@
   },
   "homepage": "https://github.com/tienle/reason-viz#readme",
   "devDependencies": {
+    "@glennsl/bs-jest": "^0.4.8",
     "bs-platform": "^6.0.1",
     "bsb-js": "^1.1.7",
+    "jest": "^24.8.0",
     "parcel-bundler": "^1.12.3",
     "react": "^16.8.1",
     "react-dom": "^16.8.1",
     "reason-react": ">=0.7.0"
   },
   "dependencies": {
-    "@antv/g": "^3.4.4"
+    "@antv/g": "^3.4.4",
+    "@antv/util": "^1.3.1"
   }
 }

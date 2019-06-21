@@ -33,7 +33,7 @@ type t = {
   /* fitViewPadding: padding, */
   /* groupByTypes: bool, */
   /* autoPaint: bool, */
-  renderer: ReasonViz__Canvas.renderer,
+  renderer: string,
   pixelRatio: option(int),
   /* mode: list(mode), */
   /* nodeStyle, */
@@ -73,6 +73,6 @@ let create = (~containerId, ~width, ~height, ~renderer=?, ~pixelRatio=?, ()) => 
   containerId,
   width,
   height,
-  renderer: Option.getWithDefault(renderer, ReasonViz__Canvas.Canvas),
+  renderer: Option.getWithDefault(renderer, "canvas"),
   pixelRatio,
 };

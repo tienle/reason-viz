@@ -1,4 +1,21 @@
-type labelPosition = [ | `top | `bottom | `left | `right | `center];
+/* const node = new Node({ */
+/*   id: '',            */
+/*   shape: '', */
+/*   x: 0, */
+/*   y: 0, */
+/*   size: [], */
+/*   style: {...}, */
+/*   label: 'label text', */
+/*   labelCfg: { */
+/*     position: 'top', */
+/*     style: {...} */
+/*   }, */
+/*   anchorPoints: [] */
+/*  }); */
+
+type matrix;
+
+[@bs.deriving jsConverter]
 type point = {
   x: int,
   y: int,
@@ -9,23 +26,9 @@ type size = {
   height: int,
 };
 
-type circle = {
-  mutable x: int,
-  mutable y: int,
-  radius: int,
+module Path = {
+  type t = (string, array(int));
 };
-
-type ellipse = {
-  mutable x: int,
-  mutable y: int,
-  rx: int,
-  ry: int,
-};
-
-type text = {content: string};
-
-type shape('a) =
-  [ | `Circle(circle) | `Ellipse(ellipse) | `Text(text)] as 'a;
 
 module StringHash =
   Hashtbl.Make({
@@ -33,3 +36,9 @@ module StringHash =
     let equal = String.equal;
     let hash = String.length;
   });
+
+module StylesList = {
+  type t = Js.Dict.t(string);
+
+  let make = ReasonViz__Drawing_Styles.make;
+};

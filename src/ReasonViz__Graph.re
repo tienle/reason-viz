@@ -1,20 +1,21 @@
-open Belt;
 open ReasonViz__Types;
 
 module Canvas = ReasonViz__Canvas;
+module RN = ReasonViz__Node;
+module RE = ReasonViz__Edge;
 
-type t('a) = {
+type t = {
   canvas: Canvas.t,
   group: Canvas.Group.t,
-  mutable itemMap: StringHash.t(ReasonViz__Node_Type.t('a)),
-  mutable nodes: list(ReasonViz__Node_Type.t('a)),
-  /* mutable edges: list(edge), */
+  nodesMap: Js.Dict.t(RN.t),
+  mutable nodes: list(RN.t),
+  mutable edges: list(RE.t),
 };
 
-let create = (~graphOptions: ReasonViz__Graph_Options.t) => {
+let create = (~graphOptions) => {
   let canvas =
     Canvas.create(
-      ~containerId=graphOptions.containerId,
+      ~containerId=graphOptions.ReasonViz__Graph_Options.containerId,
       ~width=graphOptions.width,
       ~height=graphOptions.height,
       ~renderer=graphOptions.renderer,
@@ -24,25 +25,34 @@ let create = (~graphOptions: ReasonViz__Graph_Options.t) => {
   let id: string = [%raw "canvas.get('el').id"];
   let group =
     Canvas.addGroup(canvas, {"id": id, "className": "root-container"});
-  {canvas, group, itemMap: StringHash.create(10), nodes: []};
+  {canvas, group, nodesMap: Js.Dict.empty(), nodes: [], edges: []};
 };
 
-let addNode = (g, model: ReasonViz__Data.node('a)) => {
-  // TODO: nodeStyle: default selected active
-  let node = ReasonViz__Node.create(~model, ~parentGroup=g.group, ());
-  g.nodes = g.nodes @ [node];
-  StringHash.add(g.itemMap, node.id, node);
-  // emit after add item
-  // autopaint
+let addNode = (graph, model) => {
+  let node = RN.make(~model, ~parentGroup=graph.group);
+  /* TODO: add to graph nodes */
+
+  module Shape = (val ReasonViz__NodeShape.get(model.shape));
+  node.shape = Shape.draw(node);
   node;
 };
 
-let addEdge = (g, edge) => ();
+let addNodes = (g, nodes) => {
+  g.nodes = List.map(addNode(g), nodes);
+};
 
-// TODO: why type not being infered from .rei
-let parse = (g: t('a), ~data: ReasonViz__Data.t('a)) => {
-  List.forEach(data.nodes, n => addNode(g, n));
-  g;
+let addEdge = (graph, model) => {
+  let edge =
+    RE.make(~nodesMap=graph.nodesMap, ~model, ~parentGroup=graph.group);
+  /* TODO: add to graph edges */
+
+  module Shape = (val ReasonViz__EdgeShape.get(model.shape));
+  Shape.draw(edge);
+  edge;
+};
+
+let addEdges = (g, edges) => {
+  g.edges = List.map(addEdge(g), edges);
 };
 
 let paint = g => {
@@ -52,6 +62,5 @@ let paint = g => {
 };
 
 let render = g => {
-  Canvas.clear(g.canvas);
   paint(g);
 };

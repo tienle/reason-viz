@@ -24,6 +24,7 @@ lib/bs
 .vscode
 .merlin
 .bsb.lock
+.tern-port
 *.bs.js
 
 /dist

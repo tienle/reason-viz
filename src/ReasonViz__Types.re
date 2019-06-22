@@ -15,6 +15,8 @@
 
 type matrix;
 
+exception NodeNotFound(string);
+
 [@bs.deriving jsConverter]
 type point = {
   x: int,

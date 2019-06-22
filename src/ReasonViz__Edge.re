@@ -148,8 +148,11 @@ let make = (~nodesMap, ~parentGroup, ~model: Model.t) => {
   let translateToNode =
     fun
     | `NodeId(id) => {
-        let node = Js.Dict.unsafeGet(nodesMap, id);
-        `Node(node);
+        let node = Js.Dict.get(nodesMap, id);
+        switch (node) {
+        | Some(node) => `Node(node)
+        | None => raise(NodeNotFound(id))
+        };
       }
     | point => point;
 

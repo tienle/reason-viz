@@ -2,6 +2,7 @@ open ReasonViz__Types;
 
 module RN = ReasonViz__Node;
 module Canvas = ReasonViz__Canvas;
+module Util = ReasonViz__Utils;
 
 module type Shape = {let draw: RN.t => Canvas.Shape.t;};
 
@@ -20,12 +21,19 @@ module Make =
        (
          Shape: {
            let shapeType: string;
-           let getShapeStyle: RN.Model.t => Js.Dict.t(string);
+           let getShapeStyle: RN.Model.t => Js.t({..});
          },
        )
        : Shape => {
   let drawShape = (node: RN.t) => {
-    let style = Shape.getShapeStyle(node.model);
+    let style =
+      [
+        Util.castToJsObj(RN.Model.default^.styles),
+        Shape.getShapeStyle(node.model),
+        Util.castToJsObj(node.model.styles),
+      ]
+      |> Util.mergeJsObjects;
+
     let shape =
       Canvas.Group.addShape(node.group, Shape.shapeType, {"attrs": style});
     Canvas.Shape.set(shape, "className", Shape.shapeType ++ "shape");
@@ -123,15 +131,8 @@ module Circle =
 
     let getShapeStyle = (model: RN.Model.t) => {
       let (size, _) = model.props.getExn("size") |> RN.ShapeValue.toPairInt;
-      let styles =
-        Js.Dict.fromList([
-          ("x", "0"),
-          ("y", "0"),
-          ("r", string_of_int(size / 2)),
-        ]);
 
-      [RN.Model.default^.styles, styles, model.styles]
-      |> ReasonViz__Utils.mergeDict;
+      Util.makeObj({"x": 0, "y": 0, "r": size / 2});
     };
   });
 
@@ -144,16 +145,8 @@ module Rect =
         model.props.getExn("size") |> RN.ShapeValue.toPairInt;
       let x = 0 - width / 2;
       let y = 0 - height / 2;
-      let styles =
-        Js.Dict.fromList([
-          ("x", string_of_int(x)),
-          ("y", string_of_int(y)),
-          ("width", string_of_int(width)),
-          ("height", string_of_int(height)),
-        ]);
 
-      [RN.Model.default^.styles, styles, model.styles]
-      |> ReasonViz__Utils.mergeDict;
+      Util.makeObj({"x": x, "y": y, "width": width, "height": height});
     };
   });
 
@@ -166,16 +159,7 @@ module Ellipse =
         model.props.getExn("size") |> RN.ShapeValue.toPairInt;
       let rx = width / 2;
       let ry = height / 2;
-      let styles =
-        Js.Dict.fromList([
-          ("x", "0"),
-          ("y", "0"),
-          ("rx", string_of_int(rx)),
-          ("ry", string_of_int(ry)),
-        ]);
-
-      [RN.Model.default^.styles, styles, model.styles]
-      |> ReasonViz__Utils.mergeDict;
+      Util.makeObj({"x": 0, "y": 0, "rx": rx, "ry": ry});
     };
   });
 
@@ -190,16 +174,12 @@ module Image =
       let y = 0 - height / 2;
       let img = model.props.getExn("img") |> RN.ShapeValue.toString;
 
-      let styles =
-        Js.Dict.fromList([
-          ("x", string_of_int(x)),
-          ("y", string_of_int(y)),
-          ("width", string_of_int(width)),
-          ("height", string_of_int(height)),
-          ("img", img),
-        ]);
-
-      [RN.Model.default^.styles, styles, model.styles]
-      |> ReasonViz__Utils.mergeDict;
+      Util.makeObj({
+        "x": x,
+        "y": y,
+        "width": width,
+        "height": height,
+        "img": img,
+      });
     };
   });

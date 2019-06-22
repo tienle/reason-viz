@@ -19,6 +19,13 @@ let mergeDict = dicts => {
   dicts |> List.map(Js.Dict.entries) |> Array.concat |> Js.Dict.fromArray;
 };
 
+let makeObj = obj => Js.Obj.assign(Js.Obj.empty(), obj);
+let mergeJsObjects = objects => {
+  let result = Js.Obj.empty();
+  List.fold_left((acc, o) => Js.Obj.assign(acc, o), result, objects);
+};
+external castToJsObj: Js.Dict.t(string) => Js.t({..}) = "%identity";
+
 let memoize = (~id, ~f) => {
   let table = Belt.HashMap.String.make(~hintSize=100);
   x =>
@@ -188,11 +195,6 @@ module Graphic = {
     "getLabelPosition";
 
   [@bs.module "./external/util/graphic.js"]
-  external getTextAlign:
-    (
-      ~labelPosition: string,
-      ~angle: float
-    ) =>
-    string =
+  external getTextAlign: (~labelPosition: string, ~angle: float) => string =
     "getTextAlign";
 };

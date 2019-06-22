@@ -173,7 +173,8 @@ module Make =
     let pointPercent =
       switch (position) {
       | `start => 0.0
-      | `middle | `center => 0.5
+      | `middle
+      | `center => 0.5
       | `end_ => 1.0
       };
 
@@ -233,7 +234,6 @@ module Make =
   };
 
   let drawLabel = (edge, label) => {
-    [%bs.debugger];
     let style = getLabelStyle(edge, label);
     let labelShape =
       Canvas.Group.addShape(edge.group, "text", {"attrs": style});

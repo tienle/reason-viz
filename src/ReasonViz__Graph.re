@@ -30,7 +30,7 @@ let create = (~graphOptions) => {
 
 let addNode = (graph, model) => {
   let node = RN.make(~model, ~parentGroup=graph.group);
-  /* TODO: add to graph nodes */
+  Js.Dict.set(graph.nodesMap, model.id, node);
 
   module Shape = (val ReasonViz__NodeShape.get(model.shape));
   node.shape = Shape.draw(node);

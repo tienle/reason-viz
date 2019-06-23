@@ -8,6 +8,7 @@ type t = {
   canvas: Canvas.t,
   group: Canvas.Group.t,
   nodesMap: Js.Dict.t(RN.t),
+  edgesMap: Js.Dict.t(RE.t),
   mutable nodes: list(RN.t),
   mutable edges: list(RE.t),
 };
@@ -25,7 +26,15 @@ let create = (~graphOptions) => {
   let id: string = [%raw "canvas.get('el').id"];
   let group =
     Canvas.addGroup(canvas, {"id": id, "className": "root-container"});
-  {canvas, group, nodesMap: Js.Dict.empty(), nodes: [], edges: []};
+
+  {
+    canvas,
+    group,
+    nodesMap: Js.Dict.empty(),
+    edgesMap: Js.Dict.empty(),
+    nodes: [],
+    edges: [],
+  };
 };
 
 let addNode = (graph, model) => {
@@ -44,7 +53,7 @@ let addNodes = (g, nodes) => {
 let addEdge = (graph, model) => {
   let edge =
     RE.make(~nodesMap=graph.nodesMap, ~model, ~parentGroup=graph.group);
-  /* TODO: add to graph edges */
+  Js.Dict.set(graph.edgesMap, model.id, edge);
 
   module Shape = (val ReasonViz__EdgeShape.get(model.shape));
   Shape.draw(edge);

@@ -37,14 +37,15 @@ module Make =
 
     let path = Shape.getPath(points);
 
-    let styles =
-      Js.Dict.fromList([
-        ("lineWidth", string_of_int(model.size)),
-        ("path", path),
-      ]);
+    let styles = Util.makeObj({"lineWidth": model.size, "path": path});
 
-    [RE.Model.default^.styles, styles, model.styles]
-    |> ReasonViz__Utils.mergeDict;
+      [
+        Util.castToJsObj(RE.Model.default^.styles),
+        styles,
+        Util.castToJsObj(model.styles),
+      ]
+      |> Util.mergeJsObjects;
+
   };
 
   let drawShape = (edge: RE.t) => {

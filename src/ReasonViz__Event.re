@@ -16,3 +16,4 @@ let subscribe = (e: t('a), f: cb('a)) => {
 let dispatch = (e: t('a), v: 'a) => {
   List.iter(c => c(v), e^);
 };
+

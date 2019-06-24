@@ -5,7 +5,7 @@ module Canvas = ReasonViz__Canvas;
 module Util = ReasonViz__Utils;
 
 module type Shape = {
-  let draw: RN.t => Canvas.Shape.t;
+  let draw: RN.t => unit;
 
   let getAnchorPoints: RN.Model.t => list((float, float));
 };
@@ -125,10 +125,10 @@ module Make =
   let draw = (node: RN.t) => {
     Canvas.Group.clear(node.group);
     translateToPosition(node);
-    let shape = drawShape(node);
+    node.shape = drawShape(node);
     let _ = Belt.Option.flatMap(node.model.label, drawLabel(node));
 
-    shape;
+    ();
   };
 };
 

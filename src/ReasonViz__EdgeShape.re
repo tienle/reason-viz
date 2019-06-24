@@ -85,7 +85,6 @@ module Make =
     let centerX = bbox.centerX;
     let centerY = bbox.centerY;
     let anchorPoints = getAnchorPoints(node.model, bbox);
-    [%bs.debugger];
     let intersectPoint =
       switch (node.model.shape) {
       | "circle" =>
@@ -163,7 +162,12 @@ module Make =
     } else {
       let controlPoints =
         switch (model.controlPoints) {
-        | [||] => Shape.getControlPoints(model)
+        | [||] =>
+          model.sourcePoint =
+            getPointOrCallNodeWith(~f=n => {x: n.x, y: n.y}, model.source);
+          model.targetPoint =
+            getPointOrCallNodeWith(~f=n => {x: n.x, y: n.y}, model.target);
+          Shape.getControlPoints(model);
         | points => points
         };
       model.sourcePoint =
@@ -345,8 +349,8 @@ module Quadratic =
       switch (model.controlPoints) {
       | [||] => [|
           Util.Math.getControlPoint(
-            ~start=RE.Model.vertexToPoint(model.source),
-            ~end_=RE.Model.vertexToPoint(model.target),
+            ~start=model.sourcePoint,
+            ~end_=model.targetPoint,
             ~curvePosition,
             ~curveOffset,
           ),
@@ -373,14 +377,14 @@ module Cubic =
       switch (model.controlPoints) {
       | [||] => [|
           Util.Math.getControlPoint(
-            ~start=RE.Model.vertexToPoint(model.source),
-            ~end_=RE.Model.vertexToPoint(model.target),
+            ~start=model.sourcePoint,
+            ~end_=model.targetPoint,
             ~curvePosition=curvePosition[0],
             ~curveOffset=curveOffset[0],
           ),
           Util.Math.getControlPoint(
-            ~start=RE.Model.vertexToPoint(model.source),
-            ~end_=RE.Model.vertexToPoint(model.target),
+            ~start=model.sourcePoint,
+            ~end_=model.targetPoint,
             ~curvePosition=curvePosition[1],
             ~curveOffset=curveOffset[1],
           ),
@@ -405,20 +409,19 @@ module CubicHorizontal =
     let curveOffset = [|(-20), 20|];
 
     let getControlPoints = (model: RE.Model.t) => {
-      let startPoint = RE.Model.vertexToPoint(model.source);
-      let endPoint = RE.Model.vertexToPoint(model.target);
+      let startPoint = model.sourcePoint;
+      let endPoint = model.targetPoint;
 
       let innerPoint1 = {
-      x: (endPoint.x -. startPoint.x) *. curvePosition[0] +. startPoint.x,
-      y: startPoint.y
-    };
+        x: (endPoint.x -. startPoint.x) *. curvePosition[0] +. startPoint.x,
+        y: startPoint.y,
+      };
 
-    let innerPoint2 = {
-      x: (endPoint.x -. startPoint.x) *. curvePosition[1] +. startPoint.x,
-      y: endPoint.y
-    };
-    [| innerPoint1, innerPoint2 |];
-
+      let innerPoint2 = {
+        x: (endPoint.x -. startPoint.x) *. curvePosition[1] +. startPoint.x,
+        y: endPoint.y,
+      };
+      [|innerPoint1, innerPoint2|];
     };
 
     let getPath = points => {

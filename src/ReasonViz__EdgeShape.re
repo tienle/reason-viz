@@ -39,13 +39,12 @@ module Make =
 
     let styles = Util.makeObj({"lineWidth": model.size, "path": path});
 
-      [
-        Util.castToJsObj(RE.Model.default^.styles),
-        styles,
-        Util.castToJsObj(model.styles),
-      ]
-      |> Util.mergeJsObjects;
-
+    [
+      Util.castToJsObj(RE.Model.default^.styles),
+      styles,
+      Util.castToJsObj(model.styles),
+    ]
+    |> Util.mergeJsObjects;
   };
 
   let drawShape = (edge: RE.t) => {
@@ -63,8 +62,20 @@ module Make =
     switch (vertex) {
     | `Point(point) => point
     | `Node(node) => f(node)
-    | _ => {x: 0, y: 0}
+    | _ => {x: 0.0, y: 0.0}
     };
+  };
+
+  let getAnchorPoints = (model: RN.Model.t, bbox: Util.Graphic.bbox) => {
+    module Shape = (val ReasonViz__NodeShape.get(model.shape));
+    let points = Shape.getAnchorPoints(model);
+    List.map(
+      p => {
+        let (x, y) = p;
+        {x: bbox.minX +. x *. bbox.width, y: bbox.minY +. y *. bbox.height};
+      },
+      points,
+    );
   };
 
   let getLinkPointForNode = (node: RN.t, point) => {
@@ -73,12 +84,13 @@ module Make =
       Util.Graphic.getBBox(~shape=node.shape, ~group=Some(node.group));
     let centerX = bbox.centerX;
     let centerY = bbox.centerY;
-    // TODO: let anchorPoints = getAnchorPoints();
+    let anchorPoints = getAnchorPoints(node.model, bbox);
+    [%bs.debugger];
     let intersectPoint =
       switch (node.model.shape) {
       | "circle" =>
         Util.Math.getCircleIntersectByPoint(
-          {"x": centerX, "y": centerY, "r": bbox.width / 2},
+          {"x": centerX, "y": centerY, "r": bbox.width /. 2.0},
           point,
         )
       | "ellipse" =>
@@ -86,8 +98,8 @@ module Make =
           {
             "x": centerX,
             "y": centerY,
-            "rx": bbox.width / 2,
-            "ry": bbox.height / 2,
+            "rx": bbox.width /. 2.0,
+            "ry": bbox.height /. 2.0,
           },
           point,
         )
@@ -103,9 +115,13 @@ module Make =
         )
       };
 
-    // TODO: Anchor points
-
-    Belt.Option.getWithDefault(intersectPoint, {x: centerX, y: centerY});
+    switch (anchorPoints) {
+    | [headPoint, ...restPoints] =>
+      let linkPoint = Belt.Option.getWithDefault(intersectPoint, point);
+      Util.Graphic.getNearestPoint(headPoint, restPoints, linkPoint);
+    | [] =>
+      Belt.Option.getWithDefault(intersectPoint, {x: centerX, y: centerY})
+    };
   };
 
   let getLinkPoint = (name, model: RE.Model.t, controlPoint): point => {
@@ -125,9 +141,9 @@ module Make =
             {x: node.x, y: node.y}
           ),
         );
-      //TODO: anchorPoint
+      //TODO: allow to specify anchorPoint
       getLinkPointForNode(node, prePoint);
-    | _ => {x: 0, y: 0}
+    | _ => {x: 0.0, y: 0.0}
     };
   };
 
@@ -190,8 +206,8 @@ module Make =
     let styles =
       if (sourcePoint.x == targetPoint.x && sourcePoint.y == targetPoint.y) {
         [
-          ("x", string_of_int(sourcePoint.x + refX)),
-          ("y", string_of_int(targetPoint.y + refY)),
+          ("x", Js.Float.toString(sourcePoint.x +. float_of_int(refX))),
+          ("y", Js.Float.toString(targetPoint.y +. float_of_int(refY))),
         ];
       } else {
         let offsetStyle =
@@ -202,10 +218,18 @@ module Make =
             ~refY,
             ~autoRotate=labelCfg.autoRotate,
           );
+
+        let rotate =
+          Js.Nullable.toOption(offsetStyle##rotate)
+          |> (
+            fun
+            | Some(rotate) => [("rotate", Js.Float.toString(rotate))]
+            | None => []
+          );
+
         [
           ("x", string_of_int(offsetStyle##x)),
           ("y", string_of_int(offsetStyle##y)),
-          ("rotate", string_of_float(offsetStyle##rotate)),
           (
             "textAlign",
             Util.Graphic.getTextAlign(
@@ -213,6 +237,7 @@ module Make =
               ~angle=offsetStyle##angle,
             ),
           ),
+          ...rotate,
         ];
       };
 
@@ -296,7 +321,7 @@ module Spline =
       let toString = ((s, arr)) => {
         s
         ++ (
-          Array.map(string_of_int, arr)
+          Array.map(Js.Float.toString, arr)
           |> Array.to_list
           |> String.concat(" ")
         );
@@ -320,8 +345,8 @@ module Quadratic =
       switch (model.controlPoints) {
       | [||] => [|
           Util.Math.getControlPoint(
-            ~start=model.sourcePoint,
-            ~end_=model.targetPoint,
+            ~start=RE.Model.vertexToPoint(model.source),
+            ~end_=RE.Model.vertexToPoint(model.target),
             ~curvePosition,
             ~curveOffset,
           ),
@@ -348,14 +373,14 @@ module Cubic =
       switch (model.controlPoints) {
       | [||] => [|
           Util.Math.getControlPoint(
-            ~start=model.sourcePoint,
-            ~end_=model.targetPoint,
+            ~start=RE.Model.vertexToPoint(model.source),
+            ~end_=RE.Model.vertexToPoint(model.target),
             ~curvePosition=curvePosition[0],
             ~curveOffset=curveOffset[0],
           ),
           Util.Math.getControlPoint(
-            ~start=model.sourcePoint,
-            ~end_=model.targetPoint,
+            ~start=RE.Model.vertexToPoint(model.source),
+            ~end_=RE.Model.vertexToPoint(model.target),
             ~curvePosition=curvePosition[1],
             ~curveOffset=curveOffset[1],
           ),

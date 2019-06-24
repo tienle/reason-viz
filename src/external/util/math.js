@@ -50,8 +50,8 @@ const MathUtil = {
       const t = (E.x * D0.y - E.y * D0.x) / kross;
       if (MathUtil.isBetween(s, 0, 1) && MathUtil.isBetween(t, 0, 1)) {
         point = {
-          x: Math.round(p0.x + s * D0.x),
-          y: Math.round(p0.y + s * D0.y)
+          x: (p0.x + s * D0.x),
+          y: (p0.y + s * D0.y)
         };
       }
     }
@@ -122,8 +122,8 @@ const MathUtil = {
     const signY = Math.sign(dy);
     const angle = Math.atan(dy / dx);
     return {
-      x: Math.round(cx + Math.abs(r * Math.cos(angle)) * signX),
-      y: Math.round(cy + Math.abs(r * Math.sin(angle)) * signY)
+      x: (cx + Math.abs(r * Math.cos(angle)) * signX),
+      y: (cy + Math.abs(r * Math.sin(angle)) * signY)
     };
   },
   /**
@@ -148,8 +148,8 @@ const MathUtil = {
     // 通过参数方程求交点
     // const r = (b * b) / (a - c * Math.sin(angle));
     return {
-      x: Math.round(cx + a * Math.cos(angle)),
-      y: Math.round(cy + b * Math.sin(angle))
+      x: (cx + a * Math.cos(angle)),
+      y: (cy + b * Math.sin(angle))
     };
   },
   /**
@@ -200,8 +200,8 @@ const MathUtil = {
     const tangent = []; // 类似于 C 语言的写法，真难用
     vec2.normalize(tangent, [ endPoint.x - startPoint.x, endPoint.y - startPoint.y ]);
     const perpendicular = [ -tangent[1] * offset, tangent[0] * offset ];  // 垂直向量
-    point.x += Math.round(perpendicular[0]);
-    point.y += Math.round(perpendicular[1]);
+    point.x += (perpendicular[0]);
+    point.y += (perpendicular[1]);
     return point;
   },
 

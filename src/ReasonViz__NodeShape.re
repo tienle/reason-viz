@@ -4,7 +4,11 @@ module RN = ReasonViz__Node;
 module Canvas = ReasonViz__Canvas;
 module Util = ReasonViz__Utils;
 
-module type Shape = {let draw: RN.t => Canvas.Shape.t;};
+module type Shape = {
+  let draw: RN.t => Canvas.Shape.t;
+
+  let getAnchorPoints: RN.Model.t => list((float, float));
+};
 
 type shapes = Js.Dict.t(module Shape);
 
@@ -21,10 +25,13 @@ module Make =
        (
          Shape: {
            let shapeType: string;
+           let getAnchorPoints: RN.Model.t => list((float, float));
            let getShapeStyle: RN.Model.t => Js.t({..});
          },
        )
        : Shape => {
+  let getAnchorPoints = Shape.getAnchorPoints;
+
   let drawShape = (node: RN.t) => {
     let style =
       [
@@ -129,6 +136,8 @@ module Circle =
   Make({
     let shapeType = "circle";
 
+    let getAnchorPoints = (model: RN.Model.t) => model.anchorPoints;
+
     let getShapeStyle = (model: RN.Model.t) => {
       let (size, _) = model.props.getExn("size") |> RN.ShapeValue.toPairInt;
 
@@ -139,6 +148,8 @@ module Circle =
 module Rect =
   Make({
     let shapeType = "rect";
+
+    let getAnchorPoints = (model: RN.Model.t) => model.anchorPoints;
 
     let getShapeStyle = (model: RN.Model.t) => {
       let (width, height) =
@@ -154,6 +165,8 @@ module Ellipse =
   Make({
     let shapeType = "ellipse";
 
+    let getAnchorPoints = (model: RN.Model.t) => model.anchorPoints;
+
     let getShapeStyle = (model: RN.Model.t) => {
       let (width, height) =
         model.props.getExn("size") |> RN.ShapeValue.toPairInt;
@@ -166,6 +179,8 @@ module Ellipse =
 module Image =
   Make({
     let shapeType = "image";
+
+    let getAnchorPoints = (model: RN.Model.t) => model.anchorPoints;
 
     let getShapeStyle = (model: RN.Model.t) => {
       let (width, height) =

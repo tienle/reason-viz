@@ -41,17 +41,19 @@ let memoize = (~id, ~f) => {
 module Math = {
   type jsPoint = {
     .
-    "x": int,
-    "y": int,
+    "x": float,
+    "y": float,
   };
+
+  [@bs.val] [@bs.scope "Math"] external round: float => int = "round";
 
   [@bs.module "./external/util/math.js"]
   external _getCircleIntersectByPoint:
     (Js.t({..}), jsPoint) =>
     Js.Nullable.t({
       ..
-      "x": int,
-      "y": int,
+      "x": float,
+      "y": float,
     }) =
     "getCircleIntersectByPoint";
 
@@ -68,8 +70,8 @@ module Math = {
     (Js.t({..}), jsPoint) =>
     Js.Nullable.t({
       ..
-      "x": int,
-      "y": int,
+      "x": float,
+      "y": float,
     }) =
     "getEllispeIntersectByPoint";
 
@@ -86,8 +88,8 @@ module Math = {
     (Js.t({..}), jsPoint) =>
     Js.Nullable.t({
       ..
-      "x": int,
-      "y": int,
+      "x": float,
+      "y": float,
     }) =
     "getRectIntersectByPoint";
 
@@ -113,14 +115,14 @@ module Math = {
   };
 
   module Vec3 = {
-    type t = array(int);
+    type t = array(float);
 
     [@bs.module "@antv/util/lib/matrix/vec3"]
     external transformMat3: (t, t, matrix) => unit = "transformMat3";
   };
 
   let applyMatrix = (point, matrix, ~tag=1, ()) => {
-    let vector = [|point.x, point.y, tag|];
+    let vector = [|point.x, point.y, float_of_int(tag)|];
 
     Vec3.transformMat3(vector, vector, matrix);
 
@@ -130,16 +132,16 @@ module Math = {
 
 module Graphic = {
   type bbox = {
-    minX: int,
-    minY: int,
-    maxX: int,
-    maxY: int,
-    x: int,
-    y: int,
-    width: int,
-    height: int,
-    centerX: int,
-    centerY: int,
+    minX: float,
+    minY: float,
+    maxX: float,
+    maxY: float,
+    x: float,
+    y: float,
+    width: float,
+    height: float,
+    centerX: float,
+    centerY: float,
   };
 
   // TODO: Memoize
@@ -168,12 +170,32 @@ module Graphic = {
     let maxY = rightBottom.y;
     let x = minX;
     let y = minY;
-    let width = maxX - minX;
-    let height = maxY - minY;
-    let centerX = (minX + maxX) / 2;
-    let centerY = (minY + maxY) / 2;
+    let width = maxX -. minX;
+    let height = maxY -. minY;
+    let centerX = (minX +. maxX) /. 2.0;
+    let centerY = (minY +. maxY) /. 2.0;
 
     {minX, minY, maxX, maxY, x, y, width, height, centerX, centerY};
+  };
+
+  let getNearestPoint = (headPoint, restPoints, currentPoint) => {
+    let distance = (p1: point, p2: point) => {
+      (p2.x -. p1.x) *. (p2.x -. p1.x) +. (p2.y -. p1.y) *. (p2.y -. p1.y);
+    };
+    let headDistance = distance(headPoint, currentPoint);
+
+    let (nearestPoint, _) =
+      List.fold_left(
+        (acc, point) => {
+          let (_, minD) = acc;
+          let d = distance(point, currentPoint);
+          d < minD ? (point, d) : acc;
+        },
+        (headPoint, headDistance),
+        restPoints,
+      );
+
+    nearestPoint;
   };
 
   [@bs.module "./external/util/graphic.js"]
@@ -190,7 +212,7 @@ module Graphic = {
       "x": int,
       "y": int,
       "angle": float,
-      "rotate": float,
+      "rotate": Js.Nullable.t(float),
     } =
     "getLabelPosition";
 

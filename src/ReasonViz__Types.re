@@ -19,8 +19,8 @@ exception NodeNotFound(string);
 
 [@bs.deriving jsConverter]
 type point = {
-  x: int,
-  y: int,
+  x: float,
+  y: float,
 };
 
 type size = {
@@ -29,7 +29,7 @@ type size = {
 };
 
 module Path = {
-  type t = (string, array(int));
+  type t = (string, array(float));
 };
 
 module StringHash =

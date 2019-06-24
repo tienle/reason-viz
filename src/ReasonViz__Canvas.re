@@ -19,13 +19,13 @@ module Group = {
   external addShape: (t, string, Js.t({..})) => Shape.t = "addShape";
 
   [@bs.send] external resetMatrix: t => unit = "resetMatrix";
-  [@bs.send] external translate: (t, int, int) => unit = "translate";
+  [@bs.send] external translate: (t, float, float) => unit = "translate";
   [@bs.send] external getMatrix: t => matrix = "getMatrix";
 };
 
 module PathUtil = {
   [@bs.module "./external/util/path.js"]
-  external catmullRomToBezier: array(int) => array(Path.t) =
+  external catmullRomToBezier: array(float) => array(Path.t) =
     "catmullRomToBezier";
 };
 

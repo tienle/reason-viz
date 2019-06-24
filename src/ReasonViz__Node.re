@@ -9,11 +9,17 @@ module ShapeValue = {
     | Int(int)
     | PairInt(int, int)
     | Bool(bool)
+    | Float(float)
     | Str(string);
 
   let toInt =
     fun
     | Int(v) => v
+    | _ => raise(Invalid);
+
+  let toFloat =
+    fun
+    | Float(v) => v
     | _ => raise(Invalid);
 
   let toPairInt =
@@ -96,6 +102,7 @@ module Model = {
     id: string,
     props: PropsList.t,
     styles: StylesList.t,
+    anchorPoints: list((float, float)),
     label: option(Label.t),
     shape: string,
   };
@@ -105,15 +112,16 @@ module Model = {
       id: "default",
       props: PropsList.make([]),
       styles: StylesList.make(Styles.[fill("#fff"), stroke("#333")]),
+      anchorPoints: [],
       label: None,
       shape: "circle",
     });
 
-  let make = (~id, ~props, ~styles, ~shape, ~label=?, ()) => {
+  let make = (~id, ~props, ~styles, ~anchorPoints=[], ~shape, ~label=?, ()) => {
     let props = PropsList.make(props);
     let styles = StylesList.make(styles);
 
-    {id, props, styles, label, shape};
+    {id, props, styles, anchorPoints, label, shape};
   };
 };
 
@@ -121,15 +129,15 @@ type t = {
   model: Model.t,
   group: Canvas.Group.t,
   mutable shape: Canvas.Shape.t,
-  mutable x: int,
-  mutable y: int,
+  mutable x: float,
+  mutable y: float,
 };
 
 let make = (~parentGroup, ~model: Model.t) => {
   let group = Canvas.Group.make(parentGroup);
   Canvas.Group.set(group, "id", model.id);
-  let x = ShapeValue.(model.props.getExn("x") |> toInt);
-  let y = ShapeValue.(model.props.getExn("y") |> toInt);
+  let x = ShapeValue.(model.props.getExn("x") |> toFloat);
+  let y = ShapeValue.(model.props.getExn("y") |> toFloat);
   let shape = Canvas.Shape.empty();
 
   {model, group, shape, x, y};

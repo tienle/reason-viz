@@ -74,18 +74,23 @@ module Model = {
     size: int,
   };
 
+  let vertexToPoint: vertex => point = fun
+    | `Point(point) => point
+    | `Node(node) =>  {x: (node.x), y: (node.y)}
+    | `NodeId(id) => raise(NodeNotFound(id));
+
   let default =
     ref({
       id: "",
       source: `NodeId(""),
       target: `NodeId(""),
       sourcePoint: {
-        x: 0,
-        y: 0,
+        x: 0.0,
+        y: 0.0,
       },
       targetPoint: {
-        x: 0,
-        y: 0,
+        x: 0.0,
+        y: 0.0,
       },
       shape: "line",
       styles: StylesList.make(Styles.[stroke("#333")]),
@@ -114,8 +119,8 @@ module Model = {
       ) => {
     let styles = StylesList.make(styles);
     let id = Belt.Option.getWithDefault(id, UniqueId.generate());
-    let sourcePoint = {x: 0, y: 0};
-    let targetPoint = {x: 0, y: 0};
+    let sourcePoint = {x: 0.0, y: 0.0};
+    let targetPoint = {x: 0.0, y: 0.0};
 
     {
       id,

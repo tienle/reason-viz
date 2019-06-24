@@ -74,9 +74,10 @@ module Model = {
     size: int,
   };
 
-  let vertexToPoint: vertex => point = fun
+  let vertexToPoint: vertex => point =
+    fun
     | `Point(point) => point
-    | `Node(node) =>  {x: (node.x), y: (node.y)}
+    | `Node(node) => {x: node.x, y: node.y}
     | `NodeId(id) => raise(NodeNotFound(id));
 
   let default =

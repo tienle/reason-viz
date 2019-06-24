@@ -398,3 +398,35 @@ module Cubic =
       {j|M $x0,$y0 |j} ++ {j|C $x1,$y1 $x2,$y2 $x3,$y3 |j};
     };
   });
+
+module CubicHorizontal =
+  Make({
+    let curvePosition = [|0.5, 0.5|];
+    let curveOffset = [|(-20), 20|];
+
+    let getControlPoints = (model: RE.Model.t) => {
+      let startPoint = RE.Model.vertexToPoint(model.source);
+      let endPoint = RE.Model.vertexToPoint(model.target);
+
+      let innerPoint1 = {
+      x: (endPoint.x -. startPoint.x) *. curvePosition[0] +. startPoint.x,
+      y: startPoint.y
+    };
+
+    let innerPoint2 = {
+      x: (endPoint.x -. startPoint.x) *. curvePosition[1] +. startPoint.x,
+      y: endPoint.y
+    };
+    [| innerPoint1, innerPoint2 |];
+
+    };
+
+    let getPath = points => {
+      let {x: x0, y: y0} = points[0];
+      let {x: x1, y: y1} = points[1];
+      let {x: x2, y: y2} = points[2];
+      let {x: x3, y: y3} = points[3];
+
+      {j|M $x0,$y0 |j} ++ {j|C $x1,$y1 $x2,$y2 $x3,$y3 |j};
+    };
+  });

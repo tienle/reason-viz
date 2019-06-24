@@ -198,3 +198,8 @@ module Image =
       });
     };
   });
+
+register("circle", (module Circle));
+register("rect", (module Rect));
+register("ellipse", (module Ellipse));
+register("image", (module Image));

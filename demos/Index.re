@@ -5,6 +5,7 @@ module Edge = ReasonViz__Edge;
 module ShapeValue = Node.ShapeValue;
 module Style = ReasonViz.Style;
 module Graph = ReasonViz.Graph;
+module Event = ReasonViz__Event;
 
 let nodes = [
   Node.Model.make(
@@ -12,8 +13,8 @@ let nodes = [
     ~shape="circle",
     ~props=
       ShapeValue.[
-        ("x", Int(100)),
-        ("y", Int(100)),
+        ("x", Float(100.0)),
+        ("y", Float(100.0)),
         ("size", PairInt(40, 40)),
       ],
     ~styles=Style.[stroke("black")],
@@ -25,11 +26,11 @@ let nodes = [
     ~shape="rect",
     ~props=
       ShapeValue.[
-        ("x", Int(200)),
-        ("y", Int(100)),
+        ("x", Float(200.0)),
+        ("y", Float(150.0)),
         ("size", PairInt(40, 40)),
       ],
-    ~styles=Style.[stroke("black")],
+    ~styles=Style.[stroke("black"), fill("#fe3")],
     ~label=Node.Label.make(~text="rect", ~position=`bottom, ()),
     (),
   ),
@@ -38,8 +39,8 @@ let nodes = [
     ~shape="ellipse",
     ~props=
       ShapeValue.[
-        ("x", Int(300)),
-        ("y", Int(100)),
+        ("x", Float(300.0)),
+        ("y", Float(100.0)),
         ("size", PairInt(60, 30)),
       ],
     ~styles=[],
@@ -51,8 +52,8 @@ let nodes = [
     ~shape="image",
     ~props=
       ShapeValue.[
-        ("x", Int(400)),
-        ("y", Int(100)),
+        ("x", Float(400.0)),
+        ("y", Float(100.0)),
         ("size", PairInt(40, 40)),
         (
           "img",
@@ -69,29 +70,29 @@ let nodes = [
 
 let edges = [
   Edge.Model.make(
-    ~source=`Point({x: 100, y: 200}),
-    ~target=`Point({x: 200, y: 200}),
+    ~source=`NodeId("node1"),
+    ~target=`NodeId("node2"),
     ~label=Edge.Label.make(~text="line", ~refY=10, ()),
     (),
   ),
   Edge.Model.make(
-    ~source=`Point({x: 250, y: 200}),
-    ~target=`Point({x: 360, y: 200}),
-    ~controlPoints=[|{x: 300, y: 220}|],
+    ~source=`Point({x: 250.0, y: 200.0}),
+    ~target=`Point({x: 360.0, y: 200.0}),
+    ~controlPoints=[|{x: 300.0, y: 220.0}|],
     ~shape="spline",
     ~label=Edge.Label.make(~text="polyline", ~refY=10, ()),
     (),
   ),
   Edge.Model.make(
-    ~source=`Point({x: 100, y: 300}),
-    ~target=`Point({x: 200, y: 300}),
+    ~source=`Point({x: 100.0, y: 300.0}),
+    ~target=`Point({x: 200.0, y: 300.0}),
     ~shape="quadratic",
     ~label=Edge.Label.make(~text="quadratic", ~refY=10, ()),
     (),
   ),
   Edge.Model.make(
-    ~source=`Point({x: 250, y: 300}),
-    ~target=`Point({x: 360, y: 300}),
+    ~source=`Point({x: 250.0, y: 300.0}),
+    ~target=`Point({x: 360.0, y: 300.0}),
     ~shape="cubic",
     ~label=Edge.Label.make(~text="cubic", ~refY=10, ()),
     (),
@@ -107,8 +108,8 @@ for (x in 4 to 400) {
         ~id="node" ++ string_of_int(x),
         ~props=
           ShapeValue.[
-            ("x", Int(0 + x * 20)),
-            ("y", Int(0 + x * 20)),
+            ("x", Float(0.0 +. float_of_int(x) *. 20.0)),
+            ("y", Float(0.0 +. float_of_int(x) *. 20.0)),
             ("size", PairInt(20, 20)),
           ],
         ~styles=Style.[fill("green"), stroke("red")],
@@ -138,13 +139,17 @@ ReasonViz__EdgeShape.register(
   (module ReasonViz__EdgeShape.Quadratic),
 );
 ReasonViz__EdgeShape.register("cubic", (module ReasonViz__EdgeShape.Cubic));
+ReasonViz__EdgeShape.register(
+  "cubic-horizontal",
+  (module ReasonViz__EdgeShape.CubicHorizontal),
+);
 
 let graphOptions =
   ReasonViz.GraphOptions.create(
     ~containerId="index1",
     ~width=1000,
     ~height=1000,
-    ~renderer="canvas",
+    ~renderer="svg",
     (),
   );
 
@@ -153,15 +158,80 @@ nodes |> Graph.addNodes(g);
 edges |> Graph.addEdges(g);
 Graph.render(g);
 
-module Util = ReasonViz__Utils;
-let _ = {
-  let m =
-    Util.Math.getCircleIntersectByPoint(
-      {"x": 100, "y": 100, "r": 20.5},
-      {x: 250, y: 220},
-    )
-    |> Belt.Option.getExn;
-  Js.log @@ m;
-  Js.log @@ m.x;
-  Js.log @@ m.y;
-};
+let graphOptions2 =
+  ReasonViz.GraphOptions.create(
+    ~containerId="index2",
+    ~width=1000,
+    ~height=1000,
+    ~renderer="svg",
+    (),
+  );
+
+let g2: Graph.t = Graph.create(~graphOptions=graphOptions2);
+
+let nodes2 = [
+  Node.Model.make(
+    ~id="node5",
+    ~shape="circle",
+    ~props=
+      ShapeValue.[
+        ("x", Float(300.0)),
+        ("y", Float(300.0)),
+        ("size", PairInt(40, 40)),
+      ],
+    ~anchorPoints=[(0.0, 0.5), (1.0, 0.5)],
+    ~styles=Style.[stroke("black")],
+    ~label=Node.Label.make(~text="circle", ~position=`bottom, ()),
+    (),
+  ),
+  Node.Model.make(
+    ~id="node6",
+    ~shape="circle",
+    ~props=
+      ShapeValue.[
+        ("x", Float(400.0)),
+        ("y", Float(250.0)),
+        ("size", PairInt(40, 40)),
+      ],
+    ~anchorPoints=[(0.0, 0.5), (1.0, 0.5)],
+    ~styles=Style.[stroke("black")],
+    ~label=Node.Label.make(~text="circle", ~position=`bottom, ()),
+    (),
+  ),
+  Node.Model.make(
+    ~id="node7",
+    ~shape="circle",
+    ~props=
+      ShapeValue.[
+        ("x", Float(400.0)),
+        ("y", Float(350.0)),
+        ("size", PairInt(40, 40)),
+      ],
+    ~anchorPoints=[(0.0, 0.5), (1.0, 0.5)],
+    ~styles=Style.[stroke("black")],
+    ~label=Node.Label.make(~text="circle", ~position=`bottom, ()),
+    (),
+  ),
+];
+let edges2 = [
+  Edge.Model.make(
+    ~source=`NodeId("node5"),
+    ~target=`NodeId("node6"),
+    ~label=Edge.Label.make(~text="cubic", ()),
+    ~shape="cubic-horizontal",
+    (),
+  ),
+  Edge.Model.make(
+    ~source=`NodeId("node5"),
+    ~target=`NodeId("node7"),
+    ~label=Edge.Label.make(~text="cubic", ()),
+    ~shape="cubic",
+    (),
+  ),
+];
+Event.subscribe(g2.onBeforePaint, g => Js.log(g));
+Event.subscribe(g2.onBeforeAddNode, n => Js.log(n));
+Event.subscribe(g2.onBeforeAddEdge, e => Js.log(e));
+nodes2 |> Graph.addNodes(g2);
+edges2 |> Graph.addEdges(g2);
+Graph.render(g2);

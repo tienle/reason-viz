@@ -406,7 +406,6 @@ module Cubic =
 module CubicHorizontal =
   Make({
     let curvePosition = [|0.5, 0.5|];
-    let curveOffset = [|(-20), 20|];
 
     let getControlPoints = (model: RE.Model.t) => {
       let startPoint = model.sourcePoint;
@@ -433,3 +432,10 @@ module CubicHorizontal =
       {j|M $x0,$y0 |j} ++ {j|C $x1,$y1 $x2,$y2 $x3,$y3 |j};
     };
   });
+
+register("line", (module Line));
+register("polyline", (module PolyLine));
+register("spline", (module Spline));
+register("quadratic", (module Quadratic));
+register("cubic", (module Cubic));
+register("cubic-horizontal", (module CubicHorizontal));

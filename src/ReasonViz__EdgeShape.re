@@ -5,7 +5,13 @@ module RE = ReasonViz__Edge;
 module Util = ReasonViz__Utils;
 module Canvas = ReasonViz__Canvas;
 
-module type Shape = {let draw: RE.t => unit;};
+module type Shape = {
+  let draw: RE.t => unit;
+
+  let getPath: array(point) => string;
+  let getControlPoints: RE.Model.t => array(point);
+  let afterDraw: RE.t => unit;
+};
 
 type shapes = Js.Dict.t(module Shape);
 
@@ -23,19 +29,24 @@ module Make =
          Shape: {
            let getControlPoints: RE.Model.t => array(point);
            let getPath: array(point) => string;
+           let afterDraw: RE.t => unit;
          },
        )
        : Shape => {
+  let getPath = Shape.getPath;
+  let getControlPoints = Shape.getControlPoints;
+  let afterDraw = Shape.afterDraw;
+
   // TODO: memoize getControlPoints
   let getShapeStyle = (model: RE.Model.t) => {
     //TODO: Shape.getPathPoints()
     let sourcePointArr = [|model.sourcePoint|];
     let targetPointArr = [|model.targetPoint|];
-    let controlPoints = Shape.getControlPoints(model);
+    let controlPoints = getControlPoints(model);
     let points =
       Array.concat([sourcePointArr, controlPoints, targetPointArr]);
 
-    let path = Shape.getPath(points);
+    let path = getPath(points);
 
     let styles = Util.makeObj({"lineWidth": model.size, "path": path});
 
@@ -280,12 +291,21 @@ module Make =
     edge.shape = shape;
     let _ = Belt.Option.flatMap(edge.model.label, drawLabel(edge));
 
+    afterDraw(edge);
     ();
   };
 };
 
+module DefaultShape = {
+  let getControlPoints = _ => [||];
+  let getPath = points => "";
+  let afterDraw = edge => ();
+};
+
 module Line =
   Make({
+    include DefaultShape;
+
     let getControlPoints = _ => [||];
     let getPath = points => {
       let toPath = (i, point) => {
@@ -302,6 +322,8 @@ module Line =
 
 module PolyLine =
   Make({
+    include DefaultShape;
+
     let getControlPoints = (model: RE.Model.t) => model.controlPoints;
 
     let getPath = points => {
@@ -319,6 +341,8 @@ module PolyLine =
 
 module Spline =
   Make({
+    include DefaultShape;
+
     let getControlPoints = (model: RE.Model.t) => model.controlPoints;
 
     let getPath = points => {
@@ -342,6 +366,8 @@ module Spline =
 
 module Quadratic =
   Make({
+    include DefaultShape;
+
     let curvePosition = 0.5;
     let curveOffset = (-20);
 
@@ -370,6 +396,8 @@ module Quadratic =
 
 module Cubic =
   Make({
+    include DefaultShape;
+
     let curvePosition = [|0.5, 0.5|];
     let curveOffset = [|(-20), 20|];
 
@@ -405,6 +433,8 @@ module Cubic =
 
 module CubicHorizontal =
   Make({
+    include Cubic;
+
     let curvePosition = [|0.5, 0.5|];
 
     let getControlPoints = (model: RE.Model.t) => {
@@ -421,15 +451,6 @@ module CubicHorizontal =
         y: endPoint.y,
       };
       [|innerPoint1, innerPoint2|];
-    };
-
-    let getPath = points => {
-      let {x: x0, y: y0} = points[0];
-      let {x: x1, y: y1} = points[1];
-      let {x: x2, y: y2} = points[2];
-      let {x: x3, y: y3} = points[3];
-
-      {j|M $x0,$y0 |j} ++ {j|C $x1,$y1 $x2,$y2 $x3,$y3 |j};
     };
   });
 

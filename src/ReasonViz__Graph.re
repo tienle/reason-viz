@@ -32,7 +32,7 @@ let create = (~graphOptions) => {
     );
   let id: string = [%raw "canvas.get('el').id"];
   let group =
-    Canvas.addGroup(canvas, {"id": id, "className": "root-container"});
+    Canvas.addGroup(canvas, {"id": id ++ "-root", "className": "root-container"});
 
   {
     canvas,
@@ -90,3 +90,5 @@ let paint = g => {
 let render = g => {
   paint(g);
 };
+
+// TODO: let destroy = () => ()

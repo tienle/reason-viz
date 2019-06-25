@@ -39,12 +39,6 @@ let memoize = (~id, ~f) => {
 };
 
 module Math = {
-  type jsPoint = {
-    .
-    "x": float,
-    "y": float,
-  };
-
   [@bs.val] [@bs.scope "Math"] external round: float => int = "round";
 
   [@bs.module "./external/util/math.js"]

@@ -23,6 +23,12 @@ type point = {
   y: float,
 };
 
+type jsPoint = {
+  .
+  "x": float,
+  "y": float,
+};
+
 type size = {
   width: int,
   height: int,

@@ -6,6 +6,29 @@ module Shape = {
   [@bs.send] external set: (t, string, 'a) => unit = "set";
   external empty: unit => t = "#null";
   [@bs.send] external getBBox: t => Js.t({..}) = "getBBox";
+  [@bs.send] external getTotalLength: (t) => float = "getTotalLength";
+  [@bs.send] external _getPoint: (t, ~ratio: float) => jsPoint = "getPoint";
+  let getPoint = (shape, ~ratio) => {
+    _getPoint(shape, ~ratio) |> pointFromJs;
+  };
+
+  [@bs.send]
+  external _animate:
+    (
+      t,
+      ~attrs: Js.t({..}),
+      ~duration: option(int),
+      ~easing: option(string),
+      ~callback: option(string),
+      ~delay: option(int)
+    ) =>
+    unit =
+    "animate";
+
+  let animate =
+      (shape, ~attrs, ~duration=?, ~easing=?, ~callback=?, ~delay=?, ()) => {
+    _animate(shape, ~attrs, ~duration, ~easing, ~callback, ~delay);
+  };
 };
 
 module Group = {

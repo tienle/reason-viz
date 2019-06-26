@@ -33,7 +33,6 @@ module Make =
          },
        )
        : Shape => {
-
   let shapeType = Shape.shapeType;
   let getAnchorPoints = Shape.getAnchorPoints;
   let getShapeStyle = Shape.getShapeStyle;
@@ -55,8 +54,7 @@ module Make =
   };
 
   let getLabelStyleByPosition = (model: RN.Model.t, label: RN.Label.t) => {
-    let (width, height) =
-      model.props.getExn("size") |> RN.ShapeValue.toPairInt;
+    let {width, height} = model.size;
 
     let offset =
       switch (label.cfg) {
@@ -152,9 +150,9 @@ module Circle =
     include DefaultShape;
 
     let getShapeStyle = (model: RN.Model.t) => {
-      let (size, _) = model.props.getExn("size") |> RN.ShapeValue.toPairInt;
+      let {width, _} = model.size;
 
-      Util.makeObj({"x": 0, "y": 0, "r": size / 2});
+      Util.makeObj({"x": 0, "y": 0, "r": width / 2});
     };
   });
 
@@ -165,8 +163,7 @@ module Rect =
     include DefaultShape;
 
     let getShapeStyle = (model: RN.Model.t) => {
-      let (width, height) =
-        model.props.getExn("size") |> RN.ShapeValue.toPairInt;
+      let {width, height} = model.size;
       let x = 0 - width / 2;
       let y = 0 - height / 2;
 
@@ -181,8 +178,7 @@ module Ellipse =
     include DefaultShape;
 
     let getShapeStyle = (model: RN.Model.t) => {
-      let (width, height) =
-        model.props.getExn("size") |> RN.ShapeValue.toPairInt;
+      let {width, height} = model.size;
       let rx = width / 2;
       let ry = height / 2;
       Util.makeObj({"x": 0, "y": 0, "rx": rx, "ry": ry});
@@ -196,8 +192,7 @@ module Image =
     include DefaultShape;
 
     let getShapeStyle = (model: RN.Model.t) => {
-      let (width, height) =
-        model.props.getExn("size") |> RN.ShapeValue.toPairInt;
+      let {width, height} = model.size;
       let x = 0 - width / 2;
       let y = 0 - height / 2;
       let img = model.props.getExn("img") |> RN.ShapeValue.toString;

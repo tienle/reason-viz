@@ -105,6 +105,7 @@ module Model = {
     anchorPoints: list((float, float)),
     label: option(Label.t),
     shape: string,
+    size: size,
   };
 
   let default =
@@ -115,13 +116,16 @@ module Model = {
       anchorPoints: [],
       label: None,
       shape: "circle",
+      size: {width: 0, height: 0},
     });
 
   let make = (~id, ~props, ~styles, ~anchorPoints=[], ~shape, ~label=?, ()) => {
     let props = PropsList.make(props);
     let styles = StylesList.make(styles);
+    let (w, h) = props.getExn("size") |> ShapeValue.toPairInt;
+    let size = {width: w, height: h};
 
-    {id, props, styles, anchorPoints, label, shape};
+    {id, props, styles, anchorPoints, label, shape, size};
   };
 };
 

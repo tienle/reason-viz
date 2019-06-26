@@ -39,6 +39,8 @@ let memoize = (~id, ~f) => {
 };
 
 module Math = {
+  [@bs.val]external pi: float = "Math.PI";
+
   [@bs.val] [@bs.scope "Math"] external round: float => int = "round";
 
   [@bs.module "./external/util/math.js"]
@@ -214,3 +216,10 @@ module Graphic = {
   external getTextAlign: (~labelPosition: string, ~angle: float) => string =
     "getTextAlign";
 };
+
+[@bs.module "./external/util/base.js"]
+external transformMatrix: (matrix, array((string, float))) => matrix =
+  "transform";
+
+[@bs.module "./external/util/base.js"] [@bs.scope "mat3"]
+external createMat3: unit => matrix = "create";

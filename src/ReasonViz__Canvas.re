@@ -38,6 +38,7 @@ module Group = {
   [@bs.send] external make: t => t = "addGroup";
   [@bs.send] external set: (t, string, 'a) => unit = "set";
   [@bs.send] external clear: t => unit = "clear";
+  [@bs.send] external sort: t => unit = "sort";
   [@bs.send]
   external addShape: (t, string, Js.t({..})) => Shape.t = "addShape";
 

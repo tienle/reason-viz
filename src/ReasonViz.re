@@ -7,3 +7,4 @@ module NodeShape = ReasonViz__NodeShape;
 module Edge = ReasonViz__Edge;
 module EdgeShape = ReasonViz__EdgeShape;
 module Event = ReasonViz__Event;
+module Util = ReasonViz__Utils;

@@ -6,6 +6,8 @@ module Event = ReasonViz__Event;
 type t = {
   canvas: Canvas.t,
   group: Canvas.Group.t,
+  nodeGroup: Canvas.Group.t,
+  edgeGroup: Canvas.Group.t,
   nodesMap: Js.Dict.t(RN.t),
   edgesMap: Js.Dict.t(RE.t),
   mutable nodes: list(RN.t),

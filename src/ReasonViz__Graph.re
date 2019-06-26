@@ -1,5 +1,3 @@
-open ReasonViz__Types;
-
 module Canvas = ReasonViz__Canvas;
 module RN = ReasonViz__Node;
 module RE = ReasonViz__Edge;
@@ -8,6 +6,8 @@ module Event = ReasonViz__Event;
 type t = {
   canvas: Canvas.t,
   group: Canvas.Group.t,
+  nodeGroup: Canvas.Group.t,
+  edgeGroup: Canvas.Group.t,
   nodesMap: Js.Dict.t(RN.t),
   edgesMap: Js.Dict.t(RE.t),
   mutable nodes: list(RN.t),
@@ -32,11 +32,26 @@ let create = (~graphOptions) => {
     );
   let id: string = [%raw "canvas.get('el').id"];
   let group =
-    Canvas.addGroup(canvas, {"id": id ++ "-root", "className": "root-container"});
+    Canvas.addGroup(
+      canvas,
+      {"id": id ++ "-root", "className": "root-container"},
+    );
+  let edgeGroup =
+    Canvas.addGroup(
+      canvas,
+      {"id": id ++ "-edge", "className": "edge-container", "zIndex": 1},
+    );
+  let nodeGroup =
+    Canvas.addGroup(
+      canvas,
+      {"id": id ++ "-node", "className": "node-container", "zIndex": 10},
+    );
 
   {
     canvas,
     group,
+    nodeGroup,
+    edgeGroup,
     nodesMap: Js.Dict.empty(),
     edgesMap: Js.Dict.empty(),
     nodes: [],
@@ -51,7 +66,7 @@ let create = (~graphOptions) => {
 };
 
 let addNode = (graph, model) => {
-  let node = RN.make(~model, ~parentGroup=graph.group);
+  let node = RN.make(~model, ~parentGroup=graph.nodeGroup);
   Js.Dict.set(graph.nodesMap, model.id, node);
 
   Event.dispatch(graph.onBeforeAddNode, node);
@@ -67,7 +82,7 @@ let addNodes = (g, nodes) => {
 
 let addEdge = (graph, model) => {
   let edge =
-    RE.make(~nodesMap=graph.nodesMap, ~model, ~parentGroup=graph.group);
+    RE.make(~nodesMap=graph.nodesMap, ~model, ~parentGroup=graph.edgeGroup);
   Js.Dict.set(graph.edgesMap, model.id, edge);
 
   Event.dispatch(graph.onBeforeAddEdge, edge);

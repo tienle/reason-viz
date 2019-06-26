@@ -96,8 +96,10 @@ module Make =
     let centerX = bbox.centerX;
     let centerY = bbox.centerY;
     let anchorPoints = getAnchorPoints(node.model, bbox);
+    module NodeShape = (val ReasonViz__NodeShape.get(node.model.shape));
+
     let intersectPoint =
-      switch (node.model.shape) {
+      switch (NodeShape.shapeType) {
       | "circle" =>
         Util.Math.getCircleIntersectByPoint(
           {"x": centerX, "y": centerY, "r": bbox.width /. 2.0},
@@ -298,15 +300,14 @@ module Make =
 
 module DefaultShape = {
   let getControlPoints = _ => [||];
-  let getPath = points => "";
-  let afterDraw = edge => ();
+  let getPath = _ => "";
+  let afterDraw = _ => ();
 };
 
 module Line =
   Make({
     include DefaultShape;
 
-    let getControlPoints = _ => [||];
     let getPath = points => {
       let toPath = (i, point) => {
         let {x, y} = point;

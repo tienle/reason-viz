@@ -5,10 +5,11 @@ module Canvas = ReasonViz__Canvas;
 module Util = ReasonViz__Utils;
 
 module type Shape = {
-  let draw: RN.t => unit;
-
+  let shapeType: string;
   let getAnchorPoints: RN.Model.t => list((float, float));
+  let getShapeStyle: RN.Model.t => Js.t({..});
   let afterDraw: RN.t => unit;
+  let draw: RN.t => unit;
 };
 
 type shapes = Js.Dict.t(module Shape);
@@ -32,21 +33,24 @@ module Make =
          },
        )
        : Shape => {
+
+  let shapeType = Shape.shapeType;
   let getAnchorPoints = Shape.getAnchorPoints;
+  let getShapeStyle = Shape.getShapeStyle;
   let afterDraw = Shape.afterDraw;
 
   let drawShape = (node: RN.t) => {
     let style =
       [
         Util.castToJsObj(RN.Model.default^.styles),
-        Shape.getShapeStyle(node.model),
+        getShapeStyle(node.model),
         Util.castToJsObj(node.model.styles),
       ]
       |> Util.mergeJsObjects;
 
     let shape =
-      Canvas.Group.addShape(node.group, Shape.shapeType, {"attrs": style});
-    Canvas.Shape.set(shape, "className", Shape.shapeType ++ "shape");
+      Canvas.Group.addShape(node.group, shapeType, {"attrs": style});
+    Canvas.Shape.set(shape, "className", shapeType ++ "shape");
     shape;
   };
 
@@ -116,7 +120,7 @@ module Make =
     let style = getLabelStyle(node, label);
     let labelShape =
       Canvas.Group.addShape(node.group, "text", {"attrs": style});
-    Canvas.Shape.set(labelShape, "className", Shape.shapeType ++ "label");
+    Canvas.Shape.set(labelShape, "className", shapeType ++ "label");
     Some(labelShape);
   };
 

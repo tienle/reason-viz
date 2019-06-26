@@ -8,6 +8,7 @@ module type Shape = {
   let draw: RN.t => unit;
 
   let getAnchorPoints: RN.Model.t => list((float, float));
+  let afterDraw: RN.t => unit;
 };
 
 type shapes = Js.Dict.t(module Shape);
@@ -27,10 +28,12 @@ module Make =
            let shapeType: string;
            let getAnchorPoints: RN.Model.t => list((float, float));
            let getShapeStyle: RN.Model.t => Js.t({..});
+           let afterDraw: RN.t => unit;
          },
        )
        : Shape => {
   let getAnchorPoints = Shape.getAnchorPoints;
+  let afterDraw = Shape.afterDraw;
 
   let drawShape = (node: RN.t) => {
     let style =
@@ -128,15 +131,21 @@ module Make =
     node.shape = drawShape(node);
     let _ = Belt.Option.flatMap(node.model.label, drawLabel(node));
 
+    afterDraw(node);
     ();
   };
+};
+
+module DefaultShape = {
+  let getAnchorPoints = (model: RN.Model.t) => model.anchorPoints;
+  let afterDraw = node => ();
 };
 
 module Circle =
   Make({
     let shapeType = "circle";
 
-    let getAnchorPoints = (model: RN.Model.t) => model.anchorPoints;
+    include DefaultShape;
 
     let getShapeStyle = (model: RN.Model.t) => {
       let (size, _) = model.props.getExn("size") |> RN.ShapeValue.toPairInt;
@@ -149,7 +158,7 @@ module Rect =
   Make({
     let shapeType = "rect";
 
-    let getAnchorPoints = (model: RN.Model.t) => model.anchorPoints;
+    include DefaultShape;
 
     let getShapeStyle = (model: RN.Model.t) => {
       let (width, height) =
@@ -165,7 +174,7 @@ module Ellipse =
   Make({
     let shapeType = "ellipse";
 
-    let getAnchorPoints = (model: RN.Model.t) => model.anchorPoints;
+    include DefaultShape;
 
     let getShapeStyle = (model: RN.Model.t) => {
       let (width, height) =
@@ -180,7 +189,7 @@ module Image =
   Make({
     let shapeType = "image";
 
-    let getAnchorPoints = (model: RN.Model.t) => model.anchorPoints;
+    include DefaultShape;
 
     let getShapeStyle = (model: RN.Model.t) => {
       let (width, height) =

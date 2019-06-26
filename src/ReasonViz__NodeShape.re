@@ -140,7 +140,7 @@ module Make =
 
 module DefaultShape = {
   let getAnchorPoints = (model: RN.Model.t) => model.anchorPoints;
-  let afterDraw = node => ();
+  let afterDraw = _ => ();
 };
 
 module Circle =

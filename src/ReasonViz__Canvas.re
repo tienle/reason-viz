@@ -6,7 +6,7 @@ module Shape = {
   [@bs.send] external set: (t, string, 'a) => unit = "set";
   external empty: unit => t = "#null";
   [@bs.send] external getBBox: t => Js.t({..}) = "getBBox";
-  [@bs.send] external getTotalLength: (t) => float = "getTotalLength";
+  [@bs.send] external getTotalLength: t => float = "getTotalLength";
   [@bs.send] external _getPoint: (t, ~ratio: float) => jsPoint = "getPoint";
   let getPoint = (shape, ~ratio) => {
     _getPoint(shape, ~ratio) |> pointFromJs;
@@ -72,6 +72,10 @@ type options = {
 external createCanvas: options => t = "Canvas";
 
 [@bs.send] external addGroup: (t, Js.t({..})) => Group.t = "addGroup";
+[@bs.send] external getEl: (t, string) => element = "get";
+[@bs.send] external getInt: (t, string) => int = "get";
+[@bs.send] external on: (t, string, 'a => unit) => unit = "on";
+[@bs.send] external off: (t, string, 'a => unit) => unit = "off";
 
 /* [@bs.send] */
 /* external getElementById: (document, string) => Dom.element = "getElementById"; */

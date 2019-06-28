@@ -12,6 +12,10 @@ const cos = Math.cos;
 const SELF_LINK_SIN = sin(PI / 8);
 const SELF_LINK_COS = cos(PI / 8);
 
+const ORIGIN_MATRIX = [ 1, 0, 0, 0, 1, 0, 0, 0, 1 ];
+const MATRIX_LEN = 9;
+
+
 
 function traverse(data, fn) {
   if (fn(data) === false) {
@@ -242,6 +246,16 @@ const GraphicUtil = {
     return textAlign;
   },
 
+  isViewportChanged(group) {
+    let matrix = group.getMatrix();
+
+    for (let i = 0; i < MATRIX_LEN; i++) {
+      if (matrix[i] !== ORIGIN_MATRIX[i]) {
+        return true;
+      }
+    }
+    return false;
+  },
 };
 
 module.exports = GraphicUtil;

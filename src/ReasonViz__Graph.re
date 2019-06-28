@@ -2,23 +2,10 @@ module Canvas = ReasonViz__Canvas;
 module RN = ReasonViz__Node;
 module RE = ReasonViz__Edge;
 module Event = ReasonViz__Event;
+module EventHandler = ReasonViz__EventHandler;
+module Util = ReasonViz__Utils;
 
-type t = {
-  canvas: Canvas.t,
-  group: Canvas.Group.t,
-  nodeGroup: Canvas.Group.t,
-  edgeGroup: Canvas.Group.t,
-  nodesMap: Js.Dict.t(RN.t),
-  edgesMap: Js.Dict.t(RE.t),
-  mutable nodes: list(RN.t),
-  mutable edges: list(RE.t),
-  onBeforePaint: Event.t(t),
-  onAfterPaint: Event.t(t),
-  onBeforeAddEdge: Event.t(RE.t),
-  onAfterAddEdge: Event.t(RE.t),
-  onBeforeAddNode: Event.t(RN.t),
-  onAfterAddNode: Event.t(RN.t),
-};
+type t = ReasonViz__GraphTypes.t;
 
 let create = (~graphOptions) => {
   let canvas =
@@ -47,7 +34,7 @@ let create = (~graphOptions) => {
       {"id": id ++ "-node", "className": "node-container", "zIndex": 10},
     );
 
-  {
+  let g: t = {
     canvas,
     group,
     nodeGroup,
@@ -56,54 +43,58 @@ let create = (~graphOptions) => {
     edgesMap: Js.Dict.empty(),
     nodes: [],
     edges: [],
-    onBeforePaint: Event.create(),
-    onAfterPaint: Event.create(),
-    onBeforeAddEdge: Event.create(),
-    onAfterAddEdge: Event.create(),
-    onBeforeAddNode: Event.create(),
-    onAfterAddNode: Event.create(),
+    cleanableEffects: [],
+    dragging: false,
+    events: EventHandler.createEmptyEvents(),
   };
+
+  EventHandler.bindEvents(g);
+
+  g;
 };
 
-let addNode = (graph, model) => {
+let addNode = (graph: t, model) => {
   let node = RN.make(~model, ~parentGroup=graph.nodeGroup);
   Js.Dict.set(graph.nodesMap, model.id, node);
 
-  Event.dispatch(graph.onBeforeAddNode, node);
+  Event.dispatch(graph.events.onBeforeAddNode, node);
   module Shape = (val ReasonViz__NodeShape.get(model.shape));
   Shape.draw(node);
-  Event.dispatch(graph.onAfterAddNode, node);
+  Event.dispatch(graph.events.onAfterAddNode, node);
   node;
 };
 
-let addNodes = (g, nodes) => {
+let addNodes = (g: t, nodes) => {
   g.nodes = List.map(addNode(g), nodes);
 };
 
-let addEdge = (graph, model) => {
+let addEdge = (graph: t, model) => {
   let edge =
     RE.make(~nodesMap=graph.nodesMap, ~model, ~parentGroup=graph.edgeGroup);
   Js.Dict.set(graph.edgesMap, model.id, edge);
 
-  Event.dispatch(graph.onBeforeAddEdge, edge);
+  Event.dispatch(graph.events.onBeforeAddEdge, edge);
   module Shape = (val ReasonViz__EdgeShape.get(model.shape));
   Shape.draw(edge);
-  Event.dispatch(graph.onAfterAddEdge, edge);
+  Event.dispatch(graph.events.onAfterAddEdge, edge);
   edge;
 };
 
-let addEdges = (g, edges) => {
+let addEdges = (g: t, edges) => {
   g.edges = List.map(addEdge(g), edges);
 };
 
-let paint = g => {
-  Event.dispatch(g.onBeforePaint, g);
+let paint = (g: t) => {
+  Event.dispatch(g.events.onBeforePaint, g);
   Canvas.draw(g.canvas);
-  Event.dispatch(g.onAfterPaint, g);
+  Event.dispatch(g.events.onAfterPaint, g);
 };
 
-let render = g => {
+let render = (g: t) => {
   paint(g);
 };
 
-// TODO: let destroy = () => ()
+let destroy = g => {
+  // TODO: clean effects and allocations
+  EventHandler.clean(g);
+};

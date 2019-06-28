@@ -38,8 +38,12 @@ let memoize = (~id, ~f) => {
     };
 };
 
+module String = {
+  [@bs.send] external indexOf: (string, string) => int = "indexOf";
+};
+
 module Math = {
-  [@bs.val]external pi: float = "Math.PI";
+  [@bs.val] external pi: float = "Math.PI";
 
   [@bs.val] [@bs.scope "Math"] external round: float => int = "round";
 
@@ -124,6 +128,9 @@ module Math = {
 
     {x: vector[0], y: vector[1]};
   };
+
+  [@bs.module "./external/util/math.js"]
+  external invertMatrix: (jsPoint, matrix) => jsPoint = "invertMatrix";
 };
 
 module Graphic = {
@@ -215,6 +222,10 @@ module Graphic = {
   [@bs.module "./external/util/graphic.js"]
   external getTextAlign: (~labelPosition: string, ~angle: float) => string =
     "getTextAlign";
+
+  [@bs.module "./external/util/graphic.js"]
+  external isViewportChanged: (~group: Canvas.Group.t) => bool =
+    "isViewportChanged";
 };
 
 [@bs.module "./external/util/base.js"]
@@ -223,3 +234,7 @@ external transformMatrix: (matrix, array((string, float))) => matrix =
 
 [@bs.module "./external/util/base.js"] [@bs.scope "mat3"]
 external createMat3: unit => matrix = "create";
+
+[@bs.module "./external/util/base.js"]
+external addEventListener: (element, string, 'a => unit) => Js.t({..}) =
+  "addEventListener";

@@ -105,7 +105,7 @@ module Model = {
     anchorPoints: list((float, float)),
     label: option(Label.t),
     shape: string,
-    size: size,
+    size,
   };
 
   let default =
@@ -116,7 +116,10 @@ module Model = {
       anchorPoints: [],
       label: None,
       shape: "circle",
-      size: {width: 0, height: 0},
+      size: {
+        width: 0,
+        height: 0,
+      },
     });
 
   let make = (~id, ~props, ~styles, ~anchorPoints=[], ~shape, ~label=?, ()) => {
@@ -143,6 +146,7 @@ let make = (~parentGroup, ~model: Model.t) => {
   let x = ShapeValue.(model.props.getExn("x") |> toFloat);
   let y = ShapeValue.(model.props.getExn("y") |> toFloat);
   let shape = Canvas.Shape.empty();
-
-  {model, group, shape, x, y};
+  let node = {model, group, shape, x, y};
+  Canvas.Group.set(group, "item", ("node", node));
+  node;
 };

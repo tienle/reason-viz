@@ -45,6 +45,19 @@ const BaseUtil = {
     }
     return [ top, right, bottom, left ];
   },
+
+  getItemRoot(shape) {
+    while (shape && !shape.get('item')) {
+      shape = shape.get('parent');
+    }
+
+    if (!shape) {
+      return;
+    } else {
+      return shape.get('item');
+    }
+  },
+
 };
 
 module.exports = BaseUtil;

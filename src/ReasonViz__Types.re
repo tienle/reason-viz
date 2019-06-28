@@ -14,8 +14,10 @@
 /*  }); */
 
 type matrix;
+type element;
 
 exception NodeNotFound(string);
+exception EmitFailure(string);
 
 [@bs.deriving jsConverter]
 type point = {

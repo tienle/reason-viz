@@ -149,7 +149,6 @@ type t = {
 
 let make = (~nodesMap, ~parentGroup, ~model: Model.t) => {
   let group = Canvas.Group.make(parentGroup);
-  Canvas.Group.set(group, "id", model.id);
 
   let translateToNode =
     fun
@@ -166,5 +165,8 @@ let make = (~nodesMap, ~parentGroup, ~model: Model.t) => {
   model.target = translateToNode(model.target);
 
   let shape = Canvas.Shape.empty();
-  {model, group, shape};
+  let edge = {model, group, shape};
+  Canvas.Group.set(group, "id", model.id);
+  Canvas.Group.set(group, "item", ("edge", edge));
+  edge;
 };

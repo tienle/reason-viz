@@ -229,9 +229,9 @@ let edges2 = [
     (),
   ),
 ];
-Event.subscribe(g2.onBeforePaint, g => Js.log(g));
-Event.subscribe(g2.onBeforeAddNode, n => Js.log(n));
-Event.subscribe(g2.onBeforeAddEdge, e => Js.log(e));
+Event.subscribe(g2.events.onBeforePaint, g => Js.log(g));
+Event.subscribe(g2.events.onBeforeAddNode, n => Js.log(n));
+Event.subscribe(g2.events.onBeforeAddEdge, e => Js.log(e));
 nodes2 |> Graph.addNodes(g2);
 edges2 |> Graph.addEdges(g2);
 Graph.render(g2);

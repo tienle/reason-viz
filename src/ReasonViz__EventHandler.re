@@ -20,6 +20,7 @@ let createEmptyEvents = (): ReasonViz__GraphTypes.events => {
   onAfterAddEdge: Event.create(),
   onBeforeAddNode: Event.create(),
   onAfterAddNode: Event.create(),
+  onStateUpdate: Event.create(),
   onCanvasClick: Event.create(),
   onCanvasMouseDown: Event.create(),
   onCanvasMouseUp: Event.create(),

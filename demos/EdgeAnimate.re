@@ -39,12 +39,12 @@ let nodes = [
     ~shape="rect",
     ~props=
       ShapeValue.[
-        ("x", Float(300.0)),
+        ("x", Float(250.0)),
         ("y", Float(200.0)),
         ("size", PairInt(40, 40)),
       ],
     ~styles=Style.[stroke("black")],
-    ~label=Node.Label.make(~text="rect", ~position=`bottom, ()),
+    ~label=Node.Label.make(~text="center", ~position=`bottom, ()),
     (),
   ),
   Node.Model.make(
@@ -76,6 +76,7 @@ let nodes = [
 ];
 let edges = [
   Edge.Model.make(
+    ~id="edge-circle",
     ~source=`NodeId("node1"),
     ~target=`NodeId("node2"),
     ~shape="circle-running",
@@ -98,39 +99,6 @@ let edges = [
 module CircleRunningEdge =
   ReasonViz.EdgeShape.Make({
     include ReasonViz.EdgeShape.Cubic;
-
-    let afterDraw = (edge: ReasonViz.Edge.t) => {
-      let shape = edge.shape;
-      let startPoint = Canvas.Shape.getPoint(shape, ~ratio=0.0);
-      let circle =
-        Canvas.Group.addShape(
-          edge.group,
-          "circle",
-          {
-            "attrs": {
-              "fill": "red",
-              "r": 3,
-              "x": startPoint.x,
-              "y": startPoint.y,
-            },
-          },
-        );
-
-      Canvas.Shape.animate(
-        circle,
-        ~attrs={
-          "onFrame": ratio => {
-            let point = Canvas.Shape.getPoint(shape, ~ratio);
-            point |> pointToJs;
-          },
-          "repeat": true,
-        },
-        ~duration=3000,
-        (),
-      );
-
-      ();
-    };
   });
 
 module LineDashEdge =
@@ -210,6 +178,79 @@ module LineGrowthEdge =
 ReasonViz.EdgeShape.register("circle-running", (module CircleRunningEdge));
 ReasonViz.EdgeShape.register("line-dash", (module LineDashEdge));
 ReasonViz.EdgeShape.register("line-growth", (module LineGrowthEdge));
+
+Event.subscribe(
+  g.events.onNodeMouseEnter,
+  ((_, n)) => {
+    Canvas.Shape.attr(n.shape, "fill", "pink");
+    Graph.setState(g, `Node(n), "animate", "running");
+  },
+);
+
+Event.subscribe(g.events.onNodeMouseLeave, ((_, n)) => {
+  Canvas.Shape.attr(n.shape, "fill", "white");
+  Graph.setState(g, `Node(n), "animate", "")
+});
+
+let animateCircleEdge = (edge: ReasonViz.Edge.t) => {
+  let shape = edge.shape;
+  let startPoint = Canvas.Shape.getPoint(shape, ~ratio=0.0);
+  let circle =
+    Canvas.Group.addShape(
+      edge.group,
+      "image",
+      {
+        "id": "red-circle",
+        "attrs": {
+          "img": "http://www.nyan.cat/cats/original.gif",
+          "width": 30,
+          "x": startPoint.x,
+          "y": startPoint.y,
+        },
+      },
+    );
+
+  Canvas.Shape.animate(
+    circle,
+    ~attrs={
+      "onFrame": ratio => {
+        let point = Canvas.Shape.getPoint(shape, ~ratio);
+        point |> pointToJs;
+      },
+      "repeat": true,
+    },
+    ~duration=3000,
+    (),
+  );
+
+  ();
+};
+
+let stopAnimate = (edge: GraphTypes.edge) => {
+  let shape = Canvas.Group.findShapeById(edge.group, "red-circle");
+  Canvas.Shape.stopAnimate(shape);
+  Canvas.Shape.remove(shape);
+};
+
+Event.subscribe(
+  g.events.onStateUpdate,
+  ((item, key, value)) => {
+    let animateEdges = edges => {
+      switch (key, value) {
+      | ("animate", "running") => edges |> List.iter(animateCircleEdge)
+      | ("animate", _) => edges |> List.iter(stopAnimate)
+      };
+    };
+
+    switch (item) {
+    | `Node(node) =>
+      animateEdges(
+        node.edges |> List.filter(e => e.GraphTypes.model.id == "edge-circle"),
+      )
+    | _ => ()
+    };
+  },
+);
 
 nodes |> Graph.addNodes(g);
 edges |> Graph.addEdges(g);

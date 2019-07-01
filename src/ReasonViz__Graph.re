@@ -73,6 +73,16 @@ let addEdge = (graph: t, model) => {
     RE.make(~nodesMap=graph.nodesMap, ~model, ~parentGroup=graph.edgeGroup);
   Js.Dict.set(graph.edgesMap, model.id, edge);
 
+  let addEdgeToNode = (node: RE.Model.vertex, edge) => {
+    switch (node) {
+    | `Node(node) => node.edges = node.edges @ [edge]
+    | _ => ()
+    };
+  };
+
+  addEdgeToNode(edge.model.source, edge);
+  addEdgeToNode(edge.model.target, edge);
+
   Event.dispatch(graph.events.onBeforeAddEdge, edge);
   module Shape = (val ReasonViz__EdgeShape.get(model.shape));
   Shape.draw(edge);
@@ -82,6 +92,14 @@ let addEdge = (graph: t, model) => {
 
 let addEdges = (g: t, edges) => {
   g.edges = List.map(addEdge(g), edges);
+};
+
+let setState = (g: t, item, key, value) => {
+  switch (item) {
+  | `Node(node) => RN.setState(node, key, value)
+  | `Edge(edge) => RE.setState(edge, key, value)
+  };
+  Event.dispatch(g.events.onStateUpdate, (item, key, value));
 };
 
 let paint = (g: t) => {

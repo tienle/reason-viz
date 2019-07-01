@@ -3,8 +3,11 @@ open ReasonViz__Types;
 module Shape = {
   type t;
 
-  [@bs.send] external set: (t, string, 'a) => unit = "set";
   external empty: unit => t = "#null";
+  [@bs.send] external set: (t, string, 'a) => unit = "set";
+  [@bs.send] external attr: (t, string, 'a) => unit = "attr";
+  [@bs.send] external destroy: t => unit = "destroy";
+  [@bs.send] external remove: t => unit = "remove";
   [@bs.send] external getBBox: t => Js.t({..}) = "getBBox";
   [@bs.send] external getTotalLength: t => float = "getTotalLength";
   [@bs.send] external _getPoint: (t, ~ratio: float) => jsPoint = "getPoint";
@@ -29,6 +32,8 @@ module Shape = {
       (shape, ~attrs, ~duration=?, ~easing=?, ~callback=?, ~delay=?, ()) => {
     _animate(shape, ~attrs, ~duration, ~easing, ~callback, ~delay);
   };
+
+  [@bs.send] external stopAnimate: t => unit = "stopAnimate";
 };
 
 module Group = {
@@ -39,6 +44,7 @@ module Group = {
   [@bs.send] external set: (t, string, 'a) => unit = "set";
   [@bs.send] external clear: t => unit = "clear";
   [@bs.send] external sort: t => unit = "sort";
+  [@bs.send] external findShapeById: (t, string) => Shape.t = "findById";
   [@bs.send]
   external addShape: (t, string, Js.t({..})) => Shape.t = "addShape";
 

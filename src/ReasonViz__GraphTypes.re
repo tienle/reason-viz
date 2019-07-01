@@ -107,7 +107,33 @@ module NodeModel = {
   };
 };
 
-type node = {
+type event = {
+  .
+  "x": int,
+  "y": int,
+  "canvasX": int,
+  "canvasY": int,
+  "clientX": int,
+  "clientY": int,
+  "timeStamp": int,
+  "type": string,
+};
+
+type t = {
+  canvas: Canvas.t,
+  group: Canvas.Group.t,
+  nodeGroup: Canvas.Group.t,
+  edgeGroup: Canvas.Group.t,
+  nodesMap: Js.Dict.t(node),
+  edgesMap: Js.Dict.t(edge),
+  mutable nodes: list(node),
+  mutable edges: list(edge),
+  mutable cleanableEffects: list(unit => unit),
+  mutable dragging: bool,
+  events,
+}
+and node = {
+  graph: t,
   model: NodeModel.t,
   group: Canvas.Group.t,
   mutable shape: Canvas.Shape.t,
@@ -117,6 +143,7 @@ type node = {
   mutable edges: list(edge),
 }
 and edge = {
+  graph: t,
   model: edgeModel,
   group: Canvas.Group.t,
   mutable shape: Canvas.Shape.t,
@@ -137,37 +164,6 @@ and edgeModel = {
   controlPoints: array(point),
   linkCenter: bool,
   size: int,
-};
-
-type event = {
-  .
-  "x": int,
-  "y": int,
-  "canvasX": int,
-  "canvasY": int,
-  "clientX": int,
-  "clientY": int,
-  "timeStamp": int,
-  "type": string,
-};
-
-type canvasEvent = (event, Canvas.t);
-type nodeEvent = (event, node);
-type edgeEvent = (event, edge);
-type stateUpdateEvent = ([ | `Node(node) | `Edge(edge)], string, string);
-
-type t = {
-  canvas: Canvas.t,
-  group: Canvas.Group.t,
-  nodeGroup: Canvas.Group.t,
-  edgeGroup: Canvas.Group.t,
-  nodesMap: Js.Dict.t(node),
-  edgesMap: Js.Dict.t(edge),
-  mutable nodes: list(node),
-  mutable edges: list(edge),
-  mutable cleanableEffects: list(unit => unit),
-  mutable dragging: bool,
-  events,
 }
 and events = {
   onBeforePaint: Event.t(t),
@@ -176,7 +172,8 @@ and events = {
   onAfterAddEdge: Event.t(edge),
   onBeforeAddNode: Event.t(node),
   onAfterAddNode: Event.t(node),
-  onStateUpdate: Event.t(stateUpdateEvent),
+  onNodeStateUpdated: Event.t((node, string, string)),
+  onEdgeStateUpdated: Event.t((edge, string, string)),
   onCanvasClick: Event.t(canvasEvent),
   onCanvasMouseDown: Event.t(canvasEvent),
   onCanvasMouseUp: Event.t(canvasEvent),
@@ -225,4 +222,7 @@ and events = {
   onEdgeDragEnter: Event.t(edgeEvent),
   onEdgeDragLeave: Event.t(edgeEvent),
   onEdgeDrop: Event.t(edgeEvent),
-};
+}
+and canvasEvent = (event, Canvas.t)
+and nodeEvent = (event, node)
+and edgeEvent = (event, edge);

@@ -58,18 +58,18 @@ module Model = {
 
 type t = GraphTypes.node;
 
-let make = (~parentGroup, ~model: GraphTypes.NodeModel.t) => {
+let make = (~graph, ~parentGroup, ~model: GraphTypes.NodeModel.t) => {
   let group = Canvas.Group.make(parentGroup);
   Canvas.Group.set(group, "id", model.id);
   let x = GraphTypes.ShapeValue.(model.props.getExn("x") |> toFloat);
   let y = GraphTypes.ShapeValue.(model.props.getExn("y") |> toFloat);
   let shape = Canvas.Shape.empty();
   let state = Js.Dict.empty();
-  let node: t = {model, group, shape, x, y, state, edges: []};
+  let node: t = {graph, model, group, shape, x, y, state, edges: []};
   Canvas.Group.set(group, "item", ("node", node));
   node;
 };
 
-let setState = (n: t, key, value) => {
+let setState = (n: t, ~key, ~value) => {
   Js.Dict.set(n.state, key, value);
 };

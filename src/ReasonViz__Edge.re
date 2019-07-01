@@ -112,13 +112,13 @@ module Model = {
 
 type t = GraphTypes.edge;
 
-let make = (~nodesMap, ~parentGroup, ~model: Model.t) => {
+let make = (~graph: GraphTypes.t, ~parentGroup, ~model: Model.t) => {
   let group = Canvas.Group.make(parentGroup);
 
   let translateToNode =
     fun
     | `NodeId(id) => {
-        let node = Js.Dict.get(nodesMap, id);
+        let node = Js.Dict.get(graph.nodesMap, id);
         switch (node) {
         | Some(node) => `Node(node)
         | None => raise(NodeNotFound(id))
@@ -131,12 +131,12 @@ let make = (~nodesMap, ~parentGroup, ~model: Model.t) => {
 
   let shape = Canvas.Shape.empty();
   let state = Js.Dict.empty();
-  let edge: t = {model, group, shape, state};
+  let edge: t = {graph, model, group, shape, state};
   Canvas.Group.set(group, "id", model.id);
   Canvas.Group.set(group, "item", ("edge", edge));
   edge;
 };
 
-let setState = (e: t, key, value) => {
+let setState = (e: t, ~key, ~value) => {
   Js.Dict.set(e.state, key, value);
 };

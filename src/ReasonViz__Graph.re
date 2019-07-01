@@ -54,7 +54,7 @@ let create = (~graphOptions) => {
 };
 
 let addNode = (graph: t, model) => {
-  let node = RN.make(~model, ~parentGroup=graph.nodeGroup);
+  let node = RN.make(~graph, ~model, ~parentGroup=graph.nodeGroup);
   Js.Dict.set(graph.nodesMap, model.id, node);
 
   Event.dispatch(graph.events.onBeforeAddNode, node);
@@ -69,8 +69,7 @@ let addNodes = (g: t, nodes) => {
 };
 
 let addEdge = (graph: t, model) => {
-  let edge =
-    RE.make(~nodesMap=graph.nodesMap, ~model, ~parentGroup=graph.edgeGroup);
+  let edge = RE.make(~graph, ~model, ~parentGroup=graph.edgeGroup);
   Js.Dict.set(graph.edgesMap, model.id, edge);
 
   let addEdgeToNode = (node: RE.Model.vertex, edge) => {
@@ -94,12 +93,25 @@ let addEdges = (g: t, edges) => {
   g.edges = List.map(addEdge(g), edges);
 };
 
-let setState = (g: t, item, key, value) => {
-  switch (item) {
-  | `Node(node) => RN.setState(node, key, value)
-  | `Edge(edge) => RE.setState(edge, key, value)
+let setEdgeState = (edge, ~key, ~value) => {
+  RE.setState(edge, ~key, ~value);
+  Event.dispatch(edge.graph.events.onEdgeStateUpdated, (edge, key, value));
+};
+
+let setNodeState = (node, ~key, ~value) => {
+  RN.setState(node, ~key, ~value);
+  Event.dispatch(node.graph.events.onNodeStateUpdated, (node, key, value));
+};
+
+let findNodesByState = (g: t, key, value) => {
+  let hasState = (n: ReasonViz__GraphTypes.node) => {
+    switch (Js.Dict.get(n.state, key)) {
+    | None => false
+    | Some(v) => v == value
+    };
   };
-  Event.dispatch(g.events.onStateUpdate, (item, key, value));
+
+  g.nodes |> List.filter(hasState);
 };
 
 let paint = (g: t) => {

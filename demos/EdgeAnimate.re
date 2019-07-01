@@ -179,18 +179,22 @@ ReasonViz.EdgeShape.register("circle-running", (module CircleRunningEdge));
 ReasonViz.EdgeShape.register("line-dash", (module LineDashEdge));
 ReasonViz.EdgeShape.register("line-growth", (module LineGrowthEdge));
 
-Event.subscribe(
-  g.events.onNodeMouseEnter,
-  ((_, n)) => {
-    Canvas.Shape.attr(n.shape, "fill", "pink");
-    Graph.setState(g, `Node(n), "animate", "running");
-  },
+Event.subscribe(g.events.onNodeMouseEnter, ((_, n)) =>
+  Canvas.Shape.attr(
+    n.shape,
+    "fill",
+    "pink",
+    /* Graph.setNodeState(g, "animate", "running", n); */
+  )
 );
 
-Event.subscribe(g.events.onNodeMouseLeave, ((_, n)) => {
-  Canvas.Shape.attr(n.shape, "fill", "white");
-  Graph.setState(g, `Node(n), "animate", "")
-});
+Event.subscribe(
+  g.events.onNodeMouseLeave,
+  ((_, n)) => {
+    Canvas.Shape.attr(n.shape, "fill", "white");
+    Graph.setNodeState(n, ~key="animate", ~value="");
+  },
+);
 
 let animateCircleEdge = (edge: ReasonViz.Edge.t) => {
   let shape = edge.shape;
@@ -233,8 +237,8 @@ let stopAnimate = (edge: GraphTypes.edge) => {
 };
 
 Event.subscribe(
-  g.events.onStateUpdate,
-  ((item, key, value)) => {
+  g.events.onNodeStateUpdated,
+  ((node, key, value)) => {
     let animateEdges = edges => {
       switch (key, value) {
       | ("animate", "running") => edges |> List.iter(animateCircleEdge)
@@ -242,13 +246,9 @@ Event.subscribe(
       };
     };
 
-    switch (item) {
-    | `Node(node) =>
-      animateEdges(
-        node.edges |> List.filter(e => e.GraphTypes.model.id == "edge-circle"),
-      )
-    | _ => ()
-    };
+    animateEdges(
+      node.edges |> List.filter(e => e.GraphTypes.model.id == "edge-circle"),
+    );
   },
 );
 

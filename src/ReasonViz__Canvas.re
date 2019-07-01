@@ -5,6 +5,7 @@ module Shape = {
 
   external empty: unit => t = "#null";
   [@bs.send] external set: (t, string, 'a) => unit = "set";
+  [@bs.send] external get: (t, string) => string = "get";
   [@bs.send] external attr: (t, string, 'a) => unit = "attr";
   [@bs.send] external destroy: t => unit = "destroy";
   [@bs.send] external remove: t => unit = "remove";
@@ -51,6 +52,8 @@ module Group = {
   [@bs.send] external resetMatrix: t => unit = "resetMatrix";
   [@bs.send] external translate: (t, float, float) => unit = "translate";
   [@bs.send] external getMatrix: t => matrix = "getMatrix";
+  [@bs.send]
+  external findAllShapes: (t, Shape.t => bool) => array(Shape.t) = "findAll";
 };
 
 module PathUtil = {

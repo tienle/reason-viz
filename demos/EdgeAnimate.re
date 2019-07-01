@@ -39,7 +39,7 @@ let nodes = [
     ~shape="rect",
     ~props=
       ShapeValue.[
-        ("x", Float(250.0)),
+        ("x", Float(300.0)),
         ("y", Float(200.0)),
         ("size", PairInt(40, 40)),
       ],
@@ -76,7 +76,7 @@ let nodes = [
 ];
 let edges = [
   Edge.Model.make(
-    ~id="edge-circle",
+    ~id="edge-cat",
     ~source=`NodeId("node1"),
     ~target=`NodeId("node2"),
     ~shape="circle-running",
@@ -124,7 +124,7 @@ module LineDashEdge =
       let totalDash = ref([||]);
 
       let size = int_of_float(length) / interval;
-      for (i in 0 to size) {
+      for (_i in 0 to size) {
         totalDash := Array.append(totalDash^, lineDash);
       };
       Js.log(totalDash);
@@ -133,7 +133,7 @@ module LineDashEdge =
       Canvas.Shape.animate(
         shape,
         ~attrs={
-          "onFrame": ratio => {
+          "onFrame": _ratio => {
             index :=
               Int32.rem(Int32.of_int(index^ + 1), Int32.of_int(interval))
               |> Int32.to_int;
@@ -179,13 +179,12 @@ ReasonViz.EdgeShape.register("circle-running", (module CircleRunningEdge));
 ReasonViz.EdgeShape.register("line-dash", (module LineDashEdge));
 ReasonViz.EdgeShape.register("line-growth", (module LineGrowthEdge));
 
-Event.subscribe(g.events.onNodeMouseEnter, ((_, n)) =>
-  Canvas.Shape.attr(
-    n.shape,
-    "fill",
-    "pink",
-    /* Graph.setNodeState(g, "animate", "running", n); */
-  )
+Event.subscribe(
+  g.events.onNodeMouseEnter,
+  ((_, n)) => {
+    Canvas.Shape.attr(n.shape, "fill", "pink");
+    Graph.setNodeState(n, ~key="animate", ~value="running");
+  },
 );
 
 Event.subscribe(
@@ -196,44 +195,73 @@ Event.subscribe(
   },
 );
 
+let nyanCatsCount = ref(0);
+
+Event.subscribe(
+  g.events.onNodeClick,
+  ((_, node)) => {
+    nyanCatsCount := nyanCatsCount^ + 1;
+    let fillColor = Canvas.Shape.attr(node.shape, "fill");
+    fillColor("indigo");
+    Js.Global.setTimeout(() => fillColor("pink"), 200);
+
+    node.edges
+    |> List.filter(e => e.GraphTypes.model.id == "edge-cat")
+    |> List.map((edge: GraphTypes.edge) => {
+         let startPoint = Canvas.Shape.getPoint(edge.shape, ~ratio=0.0);
+         Canvas.Group.addShape(
+           edge.group,
+           "image",
+           {
+             "id": "cat" ++ string_of_int(nyanCatsCount^),
+             "className": "nyan",
+             "attrs": {
+               "img": "http://www.nyan.cat/cats/original.gif",
+               "width": 30,
+               "x": startPoint.x,
+               "y": startPoint.y,
+             },
+           },
+         );
+       });
+    Graph.setNodeState(node, ~key="animate", ~value="running");
+    ();
+  },
+);
+
 let animateCircleEdge = (edge: ReasonViz.Edge.t) => {
   let shape = edge.shape;
-  let startPoint = Canvas.Shape.getPoint(shape, ~ratio=0.0);
-  let circle =
-    Canvas.Group.addShape(
-      edge.group,
-      "image",
-      {
-        "id": "red-circle",
-        "attrs": {
-          "img": "http://www.nyan.cat/cats/original.gif",
-          "width": 30,
-          "x": startPoint.x,
-          "y": startPoint.y,
-        },
-      },
+  let cats =
+    Canvas.Group.findAllShapes(edge.group, s =>
+      Canvas.Shape.get(s, "className") == "nyan"
     );
 
-  Canvas.Shape.animate(
-    circle,
-    ~attrs={
-      "onFrame": ratio => {
-        let point = Canvas.Shape.getPoint(shape, ~ratio);
-        point |> pointToJs;
+  cats->Belt.Array.map(cat =>
+    Canvas.Shape.animate(
+      cat,
+      ~attrs={
+        "onFrame": ratio => {
+          let point = Canvas.Shape.getPoint(shape, ~ratio);
+          point |> pointToJs;
+        },
+        "repeat": true,
       },
-      "repeat": true,
-    },
-    ~duration=3000,
-    (),
+      ~duration=3000,
+      (),
+    )
   );
 
   ();
 };
 
 let stopAnimate = (edge: GraphTypes.edge) => {
-  let shape = Canvas.Group.findShapeById(edge.group, "red-circle");
-  Canvas.Shape.stopAnimate(shape);
-  Canvas.Shape.remove(shape);
+  Canvas.Group.findAllShapes(edge.group, s =>
+    Canvas.Shape.get(s, "className") == "nyan"
+  )
+  |> Array.iter(shape => {
+       Canvas.Shape.stopAnimate(shape);
+       Canvas.Shape.remove(shape);
+     });
 };
 
 Event.subscribe(
@@ -243,12 +271,13 @@ Event.subscribe(
       switch (key, value) {
       | ("animate", "running") => edges |> List.iter(animateCircleEdge)
       | ("animate", _) => edges |> List.iter(stopAnimate)
+      | (_, _) => ()
       };
     };
 
-    animateEdges(
-      node.edges |> List.filter(e => e.GraphTypes.model.id == "edge-circle"),
-    );
+    node.edges
+    |> List.filter(e => e.GraphTypes.model.id == "edge-cat")
+    |> animateEdges;
   },
 );
 

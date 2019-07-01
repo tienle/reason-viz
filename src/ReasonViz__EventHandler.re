@@ -225,11 +225,10 @@ let canvasHandler = (g: t, e) => {
   };
 
   let event: ReasonViz__GraphTypes.event = Js.Obj.assign(e, attrs);
+  let mouseMove = eventType == "mousemove";
 
   if (target == canvas) {
-    if (eventType == "mousemove") {
-      handleMouseMove(~g, ~item=None, ~event);
-    };
+    mouseMove ? handleMouseMove(~g, ~item=None, ~event) : ();
     emitCanvasEvent(g, eventType, (event, canvas));
   } else {
     let item = getItemRoot(target);
@@ -237,9 +236,7 @@ let canvasHandler = (g: t, e) => {
       Util.String.indexOf(eventType, "leave") > (-1)
       || Util.String.indexOf(eventType, "enter") > (-1);
 
-    if (eventType == "mousemove") {
-      handleMouseMove(~g, ~item, ~event);
-    };
+    mouseMove ?  handleMouseMove(~g, ~item, ~event) :();
 
     if (!entranceEvent) {
       switch (item) {

@@ -78,7 +78,8 @@ module Make =
     };
   };
 
-  let getAnchorPoints = (model: GraphTypes.NodeModel.t, bbox: Util.Graphic.bbox) => {
+  let getAnchorPoints =
+      (model: GraphTypes.NodeModel.t, bbox: Util.Graphic.bbox) => {
     module Shape = (val ReasonViz__NodeShape.get(model.shape));
     let points = Shape.getAnchorPoints(model);
     List.map(
@@ -198,7 +199,8 @@ module Make =
     };
   };
 
-  let getLabelStyleByPosition = (edge: GraphTypes.edge, label: GraphTypes.EdgeLabel.t) => {
+  let getLabelStyleByPosition =
+      (edge: GraphTypes.edge, label: GraphTypes.EdgeLabel.t) => {
     let position =
       switch (label.cfg) {
       | Some(cfg) => cfg.position
@@ -312,11 +314,9 @@ module Line =
     let getPath = points => {
       let toPath = (i, point: point) => {
         let {x, y} = point;
-        if (i == 0) {
-          {j|M $(x),$(y) |j};
-        } else {
+        (i == 0) ?
+          {j|M $(x),$(y) |j} :
           {j|L $(x),$(y) |j};
-        };
       };
       Array.mapi(toPath, points) |> Array.to_list |> String.concat("");
     };
@@ -326,7 +326,8 @@ module PolyLine =
   Make({
     include DefaultShape;
 
-    let getControlPoints = (model: GraphTypes.edgeModel) => model.controlPoints;
+    let getControlPoints = (model: GraphTypes.edgeModel) =>
+      model.controlPoints;
 
     let getPath = points => {
       let toPath = (i, point: point) => {
@@ -345,7 +346,8 @@ module Spline =
   Make({
     include DefaultShape;
 
-    let getControlPoints = (model: GraphTypes.edgeModel) => model.controlPoints;
+    let getControlPoints = (model: GraphTypes.edgeModel) =>
+      model.controlPoints;
 
     let getPath = points => {
       let toString = ((s, arr)) => {

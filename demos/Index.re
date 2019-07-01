@@ -2,7 +2,7 @@ open ReasonViz__Types;
 
 module Node = ReasonViz__Node;
 module Edge = ReasonViz__Edge;
-module ShapeValue = Node.ShapeValue;
+module ShapeValue = ReasonViz.GraphTypes.ShapeValue;
 module Style = ReasonViz.Style;
 module Graph = ReasonViz.Graph;
 module Event = ReasonViz__Event;

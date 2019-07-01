@@ -3,7 +3,7 @@ module Edge = ReasonViz.Edge;
 module Style = ReasonViz.Style;
 module Graph = ReasonViz.Graph;
 module Event = ReasonViz.Event;
-module ShapeValue = Node.ShapeValue;
+module ShapeValue = ReasonViz.GraphTypes.ShapeValue;
 
 let graphOptions =
   ReasonViz.GraphOptions.create(
@@ -77,9 +77,9 @@ let edges = [
   ),
 ];
 
-Event.subscribe(g.onBeforePaint, g => Js.log(g));
-Event.subscribe(g.onBeforeAddNode, n => Js.log(n));
-Event.subscribe(g.onBeforeAddEdge, e => Js.log(e));
+Event.subscribe(g.events.onBeforePaint, g => Js.log(g));
+Event.subscribe(g.events.onBeforeAddNode, n => Js.log(n));
+Event.subscribe(g.events.onBeforeAddEdge, e => Js.log(e));
 
 nodes |> Graph.addNodes(g);
 edges |> Graph.addEdges(g);

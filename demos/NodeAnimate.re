@@ -6,7 +6,8 @@ module Edge = ReasonViz.Edge;
 module Style = ReasonViz.Style;
 module Graph = ReasonViz.Graph;
 module Event = ReasonViz.Event;
-module ShapeValue = Node.ShapeValue;
+module GraphTypes = ReasonViz.GraphTypes;
+module ShapeValue = GraphTypes.ShapeValue;
 
 let graphOptions =
   ReasonViz.GraphOptions.create(
@@ -173,7 +174,7 @@ module InnerAnimate =
       let w = width - 12;
       let h = height - 12;
       let img =
-        node.model.props.getExn("img") |> ReasonViz.Node.ShapeValue.toString;
+        node.model.props.getExn("img") |> GraphTypes.ShapeValue.toString;
 
       let image =
         Canvas.Group.addShape(

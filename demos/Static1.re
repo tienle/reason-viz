@@ -3,7 +3,7 @@ module Edge = ReasonViz.Edge;
 module Style = ReasonViz.Style;
 module Graph = ReasonViz.Graph;
 module Event = ReasonViz.Event;
-module ShapeValue = Node.ShapeValue;
+module ShapeValue = ReasonViz.GraphTypes.ShapeValue;
 
 let nodes = [
   Node.Model.make(

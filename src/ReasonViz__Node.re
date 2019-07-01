@@ -1,78 +1,10 @@
 module Styles = ReasonViz__Drawing_Styles;
 module Canvas = ReasonViz__Canvas;
+module GraphTypes = ReasonViz__GraphTypes;
 open ReasonViz__Types;
 
-module ShapeValue = {
-  exception Invalid;
-
-  type t =
-    | Int(int)
-    | PairInt(int, int)
-    | Bool(bool)
-    | Float(float)
-    | Str(string);
-
-  let toInt =
-    fun
-    | Int(v) => v
-    | _ => raise(Invalid);
-
-  let toFloat =
-    fun
-    | Float(v) => v
-    | _ => raise(Invalid);
-
-  let toPairInt =
-    fun
-    | PairInt(v1, v2) => (v1, v2)
-    | _ => raise(Invalid);
-
-  let toBool =
-    fun
-    | Bool(v) => v
-    | _ => raise(Invalid);
-
-  let toString =
-    fun
-    | Str(v) => v
-    | _ => raise(Invalid);
-
-  let getExn = Belt.Option.getExn;
-};
-
-module PropsList = {
-  type props = list((string, ShapeValue.t));
-
-  type t = {
-    get: string => option(ShapeValue.t),
-    getExn: string => ShapeValue.t,
-    props,
-  };
-
-  let make = props => {
-    let dict = props |> Js.Dict.fromList;
-
-    {
-      get: prop => Js.Dict.get(dict, prop),
-      getExn: prop => Js.Dict.unsafeGet(dict, prop),
-      props,
-    };
-  };
-};
-
 module Label = {
-  type position = [ | `top | `bottom | `left | `right | `center];
-
-  type cfg = {
-    position,
-    offset: int,
-    styles: StylesList.t,
-  };
-
-  type t = {
-    text: string,
-    cfg: option(cfg),
-  };
+  open GraphTypes.NodeLabel;
 
   let default =
     ref({
@@ -98,20 +30,12 @@ module Label = {
 };
 
 module Model = {
-  type t = {
-    id: string,
-    props: PropsList.t,
-    styles: StylesList.t,
-    anchorPoints: list((float, float)),
-    label: option(Label.t),
-    shape: string,
-    size,
-  };
+  open GraphTypes.NodeModel;
 
   let default =
     ref({
       id: "default",
-      props: PropsList.make([]),
+      props: GraphTypes.PropsList.make([]),
       styles: StylesList.make(Styles.[fill("#fff"), stroke("#333")]),
       anchorPoints: [],
       label: None,
@@ -123,30 +47,29 @@ module Model = {
     });
 
   let make = (~id, ~props, ~styles, ~anchorPoints=[], ~shape, ~label=?, ()) => {
-    let props = PropsList.make(props);
+    let props = GraphTypes.PropsList.make(props);
     let styles = StylesList.make(styles);
-    let (w, h) = props.getExn("size") |> ShapeValue.toPairInt;
+    let (w, h) = props.getExn("size") |> GraphTypes.ShapeValue.toPairInt;
     let size = {width: w, height: h};
 
     {id, props, styles, anchorPoints, label, shape, size};
   };
 };
 
-type t = {
-  model: Model.t,
-  group: Canvas.Group.t,
-  mutable shape: Canvas.Shape.t,
-  mutable x: float,
-  mutable y: float,
-};
+type t = GraphTypes.node;
 
-let make = (~parentGroup, ~model: Model.t) => {
+let make = (~parentGroup, ~model: GraphTypes.NodeModel.t) => {
   let group = Canvas.Group.make(parentGroup);
   Canvas.Group.set(group, "id", model.id);
-  let x = ShapeValue.(model.props.getExn("x") |> toFloat);
-  let y = ShapeValue.(model.props.getExn("y") |> toFloat);
+  let x = GraphTypes.ShapeValue.(model.props.getExn("x") |> toFloat);
+  let y = GraphTypes.ShapeValue.(model.props.getExn("y") |> toFloat);
   let shape = Canvas.Shape.empty();
-  let node = {model, group, shape, x, y};
+  let state = Js.Dict.empty();
+  let node: t = {model, group, shape, x, y, state, edges: []};
   Canvas.Group.set(group, "item", ("node", node));
   node;
+};
+
+let setState = (n: t, key, value) => {
+  Js.Dict.set(n.state, key, value);
 };

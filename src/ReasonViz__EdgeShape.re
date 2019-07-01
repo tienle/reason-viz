@@ -4,13 +4,14 @@ module RN = ReasonViz__Node;
 module RE = ReasonViz__Edge;
 module Util = ReasonViz__Utils;
 module Canvas = ReasonViz__Canvas;
+module GraphTypes = ReasonViz__GraphTypes;
 
 module type Shape = {
-  let draw: RE.t => unit;
+  let draw: GraphTypes.edge => unit;
 
   let getPath: array(point) => string;
-  let getControlPoints: RE.Model.t => array(point);
-  let afterDraw: RE.t => unit;
+  let getControlPoints: GraphTypes.edgeModel => array(point);
+  let afterDraw: GraphTypes.edge => unit;
 };
 
 type shapes = Js.Dict.t(module Shape);
@@ -27,9 +28,9 @@ let get = Js.Dict.unsafeGet(shapes);
 module Make =
        (
          Shape: {
-           let getControlPoints: RE.Model.t => array(point);
+           let getControlPoints: GraphTypes.edgeModel => array(point);
            let getPath: array(point) => string;
-           let afterDraw: RE.t => unit;
+           let afterDraw: GraphTypes.edge => unit;
          },
        )
        : Shape => {
@@ -38,7 +39,7 @@ module Make =
   let afterDraw = Shape.afterDraw;
 
   // TODO: memoize getControlPoints
-  let getShapeStyle = (model: RE.Model.t) => {
+  let getShapeStyle = (model: GraphTypes.edgeModel) => {
     //TODO: Shape.getPathPoints()
     let sourcePointArr = [|model.sourcePoint|];
     let targetPointArr = [|model.targetPoint|];
@@ -58,7 +59,7 @@ module Make =
     |> Util.mergeJsObjects;
   };
 
-  let drawShape = (edge: RE.t) => {
+  let drawShape = (edge: GraphTypes.edge) => {
     let style = getShapeStyle(edge.model);
     let shape =
       Canvas.Group.addShape(
@@ -69,7 +70,7 @@ module Make =
     shape;
   };
 
-  let getPointOrCallNodeWith = (vertex: RE.Model.vertex, ~f): point => {
+  let getPointOrCallNodeWith = (vertex: GraphTypes.vertex, ~f): point => {
     switch (vertex) {
     | `Point(point) => point
     | `Node(node) => f(node)
@@ -77,7 +78,7 @@ module Make =
     };
   };
 
-  let getAnchorPoints = (model: RN.Model.t, bbox: Util.Graphic.bbox) => {
+  let getAnchorPoints = (model: GraphTypes.NodeModel.t, bbox: Util.Graphic.bbox) => {
     module Shape = (val ReasonViz__NodeShape.get(model.shape));
     let points = Shape.getAnchorPoints(model);
     List.map(
@@ -89,7 +90,7 @@ module Make =
     );
   };
 
-  let getLinkPointForNode = (node: RN.t, point) => {
+  let getLinkPointForNode = (node: GraphTypes.node, point) => {
     let shape = node.shape;
     let bbox =
       Util.Graphic.getBBox(~shape=node.shape, ~group=Some(node.group));
@@ -136,7 +137,7 @@ module Make =
     };
   };
 
-  let getLinkPoint = (name, model: RE.Model.t, controlPoint): point => {
+  let getLinkPoint = (name, model: GraphTypes.edgeModel, controlPoint): point => {
     let (vertex, oppositeVertex) =
       switch (name) {
       | `source => (model.source, model.target)
@@ -159,7 +160,7 @@ module Make =
     };
   };
 
-  let interpolateVertexPoints = (edge: RE.t) => {
+  let interpolateVertexPoints = (edge: GraphTypes.edge) => {
     let model = edge.model;
 
     let getCenterFromNode =
@@ -197,7 +198,7 @@ module Make =
     };
   };
 
-  let getLabelStyleByPosition = (edge: RE.t, label: RE.Label.t) => {
+  let getLabelStyleByPosition = (edge: GraphTypes.edge, label: GraphTypes.EdgeLabel.t) => {
     let position =
       switch (label.cfg) {
       | Some(cfg) => cfg.position
@@ -218,8 +219,8 @@ module Make =
       | none => RE.Label.default^
       };
 
-    let {RE.Label.refX, RE.Label.refY} = labelCfg;
-    let {RE.Model.sourcePoint, RE.Model.targetPoint} = edge.model;
+    let {GraphTypes.EdgeLabel.refX, GraphTypes.EdgeLabel.refY} = labelCfg;
+    let {GraphTypes.sourcePoint, GraphTypes.targetPoint} = edge.model;
     let styles =
       if (sourcePoint.x == targetPoint.x && sourcePoint.y == targetPoint.y) {
         [
@@ -250,7 +251,7 @@ module Make =
           (
             "textAlign",
             Util.Graphic.getTextAlign(
-              ~labelPosition=RE.Label.positionToJs(position),
+              ~labelPosition=GraphTypes.EdgeLabel.positionToJs(position),
               ~angle=offsetStyle##angle,
             ),
           ),
@@ -261,7 +262,7 @@ module Make =
     styles |> Js.Dict.fromList;
   };
 
-  let getLabelStyle = (edge: RE.t, label) => {
+  let getLabelStyle = (edge: GraphTypes.edge, label) => {
     let styles = getLabelStyleByPosition(edge, label);
 
     let labelStyles =
@@ -284,7 +285,7 @@ module Make =
     Some(labelShape);
   };
 
-  let draw = (edge: RE.t) => {
+  let draw = (edge: GraphTypes.edge) => {
     Canvas.Group.clear(edge.group);
 
     interpolateVertexPoints(edge);
@@ -309,7 +310,7 @@ module Line =
     include DefaultShape;
 
     let getPath = points => {
-      let toPath = (i, point) => {
+      let toPath = (i, point: point) => {
         let {x, y} = point;
         if (i == 0) {
           {j|M $(x),$(y) |j};
@@ -325,10 +326,10 @@ module PolyLine =
   Make({
     include DefaultShape;
 
-    let getControlPoints = (model: RE.Model.t) => model.controlPoints;
+    let getControlPoints = (model: GraphTypes.edgeModel) => model.controlPoints;
 
     let getPath = points => {
-      let toPath = (i, point) => {
+      let toPath = (i, point: point) => {
         let {x, y} = point;
         if (i == 0) {
           {j|M $x,$y |j};
@@ -344,7 +345,7 @@ module Spline =
   Make({
     include DefaultShape;
 
-    let getControlPoints = (model: RE.Model.t) => model.controlPoints;
+    let getControlPoints = (model: GraphTypes.edgeModel) => model.controlPoints;
 
     let getPath = points => {
       let toString = ((s, arr)) => {
@@ -372,7 +373,7 @@ module Quadratic =
     let curvePosition = 0.5;
     let curveOffset = (-20);
 
-    let getControlPoints = (model: RE.Model.t) => {
+    let getControlPoints = (model: GraphTypes.edgeModel) => {
       switch (model.controlPoints) {
       | [||] => [|
           Util.Math.getControlPoint(
@@ -402,7 +403,7 @@ module Cubic =
     let curvePosition = [|0.5, 0.5|];
     let curveOffset = [|(-20), 20|];
 
-    let getControlPoints = (model: RE.Model.t) => {
+    let getControlPoints = (model: GraphTypes.edgeModel) => {
       switch (model.controlPoints) {
       | [||] => [|
           Util.Math.getControlPoint(
@@ -438,7 +439,7 @@ module CubicHorizontal =
 
     let curvePosition = [|0.5, 0.5|];
 
-    let getControlPoints = (model: RE.Model.t) => {
+    let getControlPoints = (model: GraphTypes.edgeModel) => {
       let startPoint = model.sourcePoint;
       let endPoint = model.targetPoint;
 

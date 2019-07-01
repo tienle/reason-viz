@@ -1,23 +1,10 @@
 module Styles = ReasonViz__Drawing_Styles;
 module Canvas = ReasonViz__Canvas;
+module GraphTypes = ReasonViz__GraphTypes;
 open ReasonViz__Types;
 
 module Label = {
-  [@bs.deriving jsConverter]
-  type position = [ | `start | `center | `middle | [@bs.as "end"] `end_];
-
-  type cfg = {
-    position,
-    autoRotate: bool,
-    refX: int,
-    refY: int,
-    styles: StylesList.t,
-  };
-
-  type t = {
-    text: string,
-    cfg: option(cfg),
-  };
+  open GraphTypes.EdgeLabel;
 
   let default =
     ref({
@@ -52,27 +39,8 @@ module UniqueId =
   });
 
 module Model = {
-  type vertex = [
-    | `Point(point)
-    | `NodeId(string)
-    | `Node(ReasonViz__Node.t)
-  ];
-
-  type t = {
-    id: string,
-    mutable source: vertex,
-    mutable target: vertex,
-    mutable sourcePoint: point,
-    mutable targetPoint: point,
-    shape: string,
-    styles: StylesList.t,
-    label: option(Label.t),
-    sourceAnchor: string,
-    targetAnchor: string,
-    controlPoints: array(point),
-    linkCenter: bool,
-    size: int,
-  };
+  type vertex = GraphTypes.vertex;
+  type t = GraphTypes.edgeModel;
 
   let vertexToPoint: vertex => point =
     fun
@@ -82,7 +50,7 @@ module Model = {
 
   let default =
     ref({
-      id: "",
+      GraphTypes.id: "",
       source: `NodeId(""),
       target: `NodeId(""),
       sourcePoint: {
@@ -117,7 +85,8 @@ module Model = {
         ~linkCenter=default^.linkCenter,
         ~size=default^.size,
         (),
-      ) => {
+      )
+      : GraphTypes.edgeModel => {
     let styles = StylesList.make(styles);
     let id = Belt.Option.getWithDefault(id, UniqueId.generate());
     let sourcePoint = {x: 0.0, y: 0.0};
@@ -141,11 +110,7 @@ module Model = {
   };
 };
 
-type t = {
-  model: Model.t,
-  group: Canvas.Group.t,
-  mutable shape: Canvas.Shape.t,
-};
+type t = GraphTypes.edge;
 
 let make = (~nodesMap, ~parentGroup, ~model: Model.t) => {
   let group = Canvas.Group.make(parentGroup);
@@ -165,8 +130,13 @@ let make = (~nodesMap, ~parentGroup, ~model: Model.t) => {
   model.target = translateToNode(model.target);
 
   let shape = Canvas.Shape.empty();
-  let edge = {model, group, shape};
+  let state = Js.Dict.empty();
+  let edge: t = {model, group, shape, state};
   Canvas.Group.set(group, "id", model.id);
   Canvas.Group.set(group, "item", ("edge", edge));
   edge;
+};
+
+let setState = (e: t, key, value) => {
+  Js.Dict.set(e.state, key, value);
 };

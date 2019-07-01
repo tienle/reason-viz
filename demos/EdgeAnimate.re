@@ -6,7 +6,8 @@ module Edge = ReasonViz.Edge;
 module Style = ReasonViz.Style;
 module Graph = ReasonViz.Graph;
 module Event = ReasonViz.Event;
-module ShapeValue = Node.ShapeValue;
+module GraphTypes = ReasonViz.GraphTypes;
+module ShapeValue = GraphTypes.ShapeValue;
 
 let graphOptions =
   ReasonViz.GraphOptions.create(

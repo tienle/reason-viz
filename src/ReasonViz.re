@@ -8,3 +8,4 @@ module Edge = ReasonViz__Edge;
 module EdgeShape = ReasonViz__EdgeShape;
 module Event = ReasonViz__Event;
 module Util = ReasonViz__Utils;
+module GraphTypes = ReasonViz__GraphTypes;

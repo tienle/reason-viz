@@ -1,15 +1,15 @@
 open ReasonViz__Types;
+open ReasonViz__GraphTypes;
 
-module RN = ReasonViz__Node;
 module Canvas = ReasonViz__Canvas;
 module Util = ReasonViz__Utils;
 
 module type Shape = {
   let shapeType: string;
-  let getAnchorPoints: RN.Model.t => list((float, float));
-  let getShapeStyle: RN.Model.t => Js.t({..});
-  let afterDraw: RN.t => unit;
-  let draw: RN.t => unit;
+  let getAnchorPoints: NodeModel.t => list((float, float));
+  let getShapeStyle: NodeModel.t => Js.t({..});
+  let afterDraw: node => unit;
+  let draw: node => unit;
 };
 
 type shapes = Js.Dict.t(module Shape);
@@ -27,9 +27,9 @@ module Make =
        (
          Shape: {
            let shapeType: string;
-           let getAnchorPoints: RN.Model.t => list((float, float));
-           let getShapeStyle: RN.Model.t => Js.t({..});
-           let afterDraw: RN.t => unit;
+           let getAnchorPoints: NodeModel.t => list((float, float));
+           let getShapeStyle: NodeModel.t => Js.t({..});
+           let afterDraw: node => unit;
          },
        )
        : Shape => {
@@ -38,10 +38,10 @@ module Make =
   let getShapeStyle = Shape.getShapeStyle;
   let afterDraw = Shape.afterDraw;
 
-  let drawShape = (node: RN.t) => {
+  let drawShape = (node: node) => {
     let style =
       [
-        Util.castToJsObj(RN.Model.default^.styles),
+        Util.castToJsObj(ReasonViz__Node.Model.default^.styles),
         getShapeStyle(node.model),
         Util.castToJsObj(node.model.styles),
       ]
@@ -53,7 +53,7 @@ module Make =
     shape;
   };
 
-  let getLabelStyleByPosition = (model: RN.Model.t, label: RN.Label.t) => {
+  let getLabelStyleByPosition = (model: NodeModel.t, label: NodeLabel.t) => {
     let {width, height} = model.size;
 
     let offset =
@@ -101,7 +101,7 @@ module Make =
     styles |> Js.Dict.fromList;
   };
 
-  let getLabelStyle = (node: RN.t, label) => {
+  let getLabelStyle = (node: node, label) => {
     let styles = getLabelStyleByPosition(node.model, label);
 
     let labelStyles =
@@ -110,7 +110,7 @@ module Make =
       | None => StylesList.make([])
       };
 
-    [RN.Label.default^.styles, styles, labelStyles]
+    [ReasonViz__Node.Label.default^.styles, styles, labelStyles]
     |> ReasonViz__Utils.mergeDict;
   };
 
@@ -122,12 +122,12 @@ module Make =
     Some(labelShape);
   };
 
-  let translateToPosition = (node: RN.t) => {
+  let translateToPosition = (node: node) => {
     Canvas.Group.resetMatrix(node.group);
     Canvas.Group.translate(node.group, node.x, node.y);
   };
 
-  let draw = (node: RN.t) => {
+  let draw = (node: node) => {
     Canvas.Group.clear(node.group);
     translateToPosition(node);
     node.shape = drawShape(node);
@@ -139,7 +139,7 @@ module Make =
 };
 
 module DefaultShape = {
-  let getAnchorPoints = (model: RN.Model.t) => model.anchorPoints;
+  let getAnchorPoints = (model: NodeModel.t) => model.anchorPoints;
   let afterDraw = _ => ();
 };
 
@@ -149,7 +149,7 @@ module Circle =
 
     include DefaultShape;
 
-    let getShapeStyle = (model: RN.Model.t) => {
+    let getShapeStyle = (model: NodeModel.t) => {
       let {width, _} = model.size;
 
       Util.makeObj({"x": 0, "y": 0, "r": width / 2});
@@ -162,7 +162,7 @@ module Rect =
 
     include DefaultShape;
 
-    let getShapeStyle = (model: RN.Model.t) => {
+    let getShapeStyle = (model: NodeModel.t) => {
       let {width, height} = model.size;
       let x = 0 - width / 2;
       let y = 0 - height / 2;
@@ -177,7 +177,7 @@ module Ellipse =
 
     include DefaultShape;
 
-    let getShapeStyle = (model: RN.Model.t) => {
+    let getShapeStyle = (model: NodeModel.t) => {
       let {width, height} = model.size;
       let rx = width / 2;
       let ry = height / 2;
@@ -191,11 +191,11 @@ module Image =
 
     include DefaultShape;
 
-    let getShapeStyle = (model: RN.Model.t) => {
+    let getShapeStyle = (model: NodeModel.t) => {
       let {width, height} = model.size;
       let x = 0 - width / 2;
       let y = 0 - height / 2;
-      let img = model.props.getExn("img") |> RN.ShapeValue.toString;
+      let img = model.props.getExn("img") |> ShapeValue.toString;
 
       Util.makeObj({
         "x": x,

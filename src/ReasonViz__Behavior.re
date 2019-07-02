@@ -70,3 +70,65 @@ module ClickToSelect =
     clean();
   };
 };
+
+module DragNode = (Styles: {let draggingStyle: Js.t({..});}) => {
+  include CleanableEffect;
+
+  type point = {
+    x: int,
+    y: int,
+  };
+
+  let revertOriginal = ref(() => ());
+
+  let onNodeDragStart = ((e, node: GT.node)) => {
+    let originalAttrs = C.Shape.getAttrs(node.shape);
+    revertOriginal :=
+      (
+        () => {
+          C.Shape.attrs(node.shape, originalAttrs);
+        }
+      );
+  };
+
+  let onNodeDrag = ((e, node: GT.node)) => {
+    node.x = float_of_int(e##x);
+    node.y = float_of_int(e##y);
+
+    C.Shape.attrs(node.shape, Styles.draggingStyle);
+
+    module Shape = (val ReasonViz__NodeShape.get(node.model.shape));
+
+    Shape.translateToPosition(node);
+    node.edges
+    |> List.iter((edge: GT.edge) => {
+         module EdgeShape = (val ReasonViz__EdgeShape.get(edge.model.shape));
+         EdgeShape.draw(edge);
+       });
+    G.paint(node.graph);
+  };
+
+  let onNodeDragEnd = ((_e, node: GT.node)) => {
+    revertOriginal^();
+    G.paint(node.graph);
+  };
+
+  let onOutOfRange = ((_e, _canvas)) => {
+    ();
+  };
+
+  let activate = (g: GT.t) => {
+    [
+      E.subscribe(g.events.onNodeDragStart, onNodeDragStart),
+      E.subscribe(g.events.onNodeDrag, onNodeDrag),
+      E.subscribe(g.events.onNodeDragEnd, onNodeDragEnd),
+      E.subscribe(g.events.onCanvasMouseLeave, onOutOfRange),
+    ]
+    |> useEffects;
+    ();
+  };
+
+  let deactivate = _ => {
+    clean();
+  };
+};

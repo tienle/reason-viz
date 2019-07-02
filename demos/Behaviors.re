@@ -8,6 +8,7 @@ module Graph = ReasonViz.Graph;
 module Event = ReasonViz.Event;
 module GraphTypes = ReasonViz.GraphTypes;
 module ShapeValue = GraphTypes.ShapeValue;
+module Util = ReasonViz.Util;
 
 let graphOptions =
   ReasonViz.GraphOptions.create(
@@ -60,7 +61,8 @@ let edges = [
   Edge.Model.make(
     ~source=`NodeId("node1"),
     ~target=`NodeId("node2"),
-    ~shape="line",
+    ~shape="cubic",
+    ~label=Edge.Label.make(~text="cubic", ~refY=10, ()),
     (),
   ),
 ];
@@ -71,7 +73,19 @@ module ClickToSelect =
     let normal = Style.(make([fill("#fff"), stroke("#333")]));
   });
 
+module DragNode =
+  ReasonViz.Behavior.DragNode({
+    let draggingStyle =
+      Util.makeObj({
+        "lineWidth": 3,
+        "strokeOpacity": 0.8,
+        "fill": "#F3F9FF",
+        "fillOpacity": 0.5,
+      });
+  });
+
 ClickToSelect.activate(g);
+DragNode.activate(g);
 
 nodes |> Graph.addNodes(g);
 edges |> Graph.addEdges(g);

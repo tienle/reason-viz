@@ -10,6 +10,7 @@ module type Shape = {
   let getShapeStyle: NodeModel.t => Js.t({..});
   let afterDraw: node => unit;
   let draw: node => unit;
+  let translateToPosition: node => unit;
 };
 
 type shapes = Js.Dict.t(module Shape);

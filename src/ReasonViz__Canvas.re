@@ -6,6 +6,7 @@ module Shape = {
   external empty: unit => t = "#null";
   [@bs.send] external set: (t, string, 'a) => unit = "set";
   [@bs.send] external get: (t, string) => string = "get";
+  [@bs.send] external _getAttrs: (t, string) => Js.t({..}) = "get";
   [@bs.send] external attr: (t, string, 'a) => unit = "attr";
   [@bs.send] external attrs: (t, Js.t({..})) => unit = "attr";
   [@bs.send] external destroy: t => unit = "destroy";
@@ -13,6 +14,7 @@ module Shape = {
   [@bs.send] external getBBox: t => Js.t({..}) = "getBBox";
   [@bs.send] external getTotalLength: t => float = "getTotalLength";
   [@bs.send] external _getPoint: (t, ~ratio: float) => jsPoint = "getPoint";
+  let getAttrs = t => _getAttrs(t, "attrs");
   let getPoint = (shape, ~ratio) => {
     _getPoint(shape, ~ratio) |> pointFromJs;
   };

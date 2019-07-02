@@ -7,6 +7,7 @@ module Shape = {
   [@bs.send] external set: (t, string, 'a) => unit = "set";
   [@bs.send] external get: (t, string) => string = "get";
   [@bs.send] external attr: (t, string, 'a) => unit = "attr";
+  [@bs.send] external attrs: (t, Js.t({..})) => unit = "attr";
   [@bs.send] external destroy: t => unit = "destroy";
   [@bs.send] external remove: t => unit = "remove";
   [@bs.send] external getBBox: t => Js.t({..}) = "getBBox";

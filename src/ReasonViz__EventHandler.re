@@ -236,7 +236,7 @@ let canvasHandler = (g: t, e) => {
       Util.String.indexOf(eventType, "leave") > (-1)
       || Util.String.indexOf(eventType, "enter") > (-1);
 
-    mouseMove ?  handleMouseMove(~g, ~item, ~event) :();
+    mouseMove ? handleMouseMove(~g, ~item, ~event) : ();
 
     if (!entranceEvent) {
       switch (item) {

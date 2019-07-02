@@ -9,3 +9,4 @@ module EdgeShape = ReasonViz__EdgeShape;
 module Event = ReasonViz__Event;
 module Util = ReasonViz__Utils;
 module GraphTypes = ReasonViz__GraphTypes;
+module Behavior = ReasonViz__Behavior;

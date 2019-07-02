@@ -218,7 +218,7 @@ module Make =
     let labelCfg =
       switch (label.cfg) {
       | Some(cfg) => cfg
-      | none => RE.Label.default^
+      | None => RE.Label.default^
       };
 
     let {GraphTypes.EdgeLabel.refX, GraphTypes.EdgeLabel.refY} = labelCfg;

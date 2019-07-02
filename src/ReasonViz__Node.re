@@ -9,8 +9,8 @@ module Label = {
   let default =
     ref({
       styles:
-        StylesList.make(
-          Styles.[fill("#333"), textAlign(`center), textBaseline(`middle)],
+        Styles.(
+          make([fill("#333"), textAlign(`center), textBaseline(`middle)])
         ),
       position: `center,
       offset: 5,
@@ -36,7 +36,7 @@ module Model = {
     ref({
       id: "default",
       props: GraphTypes.PropsList.make([]),
-      styles: StylesList.make(Styles.[fill("#fff"), stroke("#333")]),
+      styles: Styles.(make([fill("#fff"), stroke("#333")])),
       anchorPoints: [],
       label: None,
       shape: "circle",
@@ -46,7 +46,7 @@ module Model = {
       },
     });
 
-  let make = (~id, ~props, ~styles, ~anchorPoints=[], ~shape, ~label=?, ()) => {
+  let make = (~id, ~props, ~styles=[], ~anchorPoints=[], ~shape, ~label=?, ()) => {
     let props = GraphTypes.PropsList.make(props);
     let styles = StylesList.make(styles);
     let (w, h) = props.getExn("size") |> GraphTypes.ShapeValue.toPairInt;

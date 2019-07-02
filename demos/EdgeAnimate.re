@@ -182,6 +182,7 @@ ReasonViz.EdgeShape.register("line-growth", (module LineGrowthEdge));
 Event.subscribe(
   g.events.onNodeMouseEnter,
   ((_, n)) => {
+    Js.log("mouse enter");
     Canvas.Shape.attr(n.shape, "fill", "pink");
     Graph.setNodeState(n, ~key="animate", ~value="running");
   },
@@ -190,6 +191,7 @@ Event.subscribe(
 Event.subscribe(
   g.events.onNodeMouseLeave,
   ((_, n)) => {
+    Js.log("mouse leave");
     Canvas.Shape.attr(n.shape, "fill", "white");
     Graph.setNodeState(n, ~key="animate", ~value="");
   },
@@ -200,6 +202,7 @@ let nyanCatsCount = ref(0);
 Event.subscribe(
   g.events.onNodeClick,
   ((_, node)) => {
+    Js.log("mouse click");
     nyanCatsCount := nyanCatsCount^ + 1;
     let fillColor = Canvas.Shape.attr(node.shape, "fill");
     fillColor("indigo");
@@ -224,7 +227,10 @@ Event.subscribe(
            },
          );
        });
-    Graph.setNodeState(node, ~key="animate", ~value="running");
+    Event.dispatch(
+      node.graph.events.onNodeStateUpdated,
+      (node, "animate", "running", ""),
+    );
     ();
   },
 );
@@ -267,6 +273,8 @@ let stopAnimate = (edge: GraphTypes.edge) => {
 Event.subscribe(
   g.events.onNodeStateUpdated,
   ((node, key, value, _)) => {
+    Js.log("node updated");
+    Js.log((node, key, value));
     let animateEdges = edges => {
       switch (key, value) {
       | ("animate", "running") => edges |> List.iter(animateCircleEdge)

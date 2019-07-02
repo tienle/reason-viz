@@ -93,14 +93,48 @@ let addEdges = (g: t, edges) => {
   g.edges = List.map(addEdge(g), edges);
 };
 
+let getNodeState = (node: ReasonViz__GraphTypes.node, ~key) => {
+  Js.Dict.get(node.state, key);
+};
+
+let getEdgeState = (edge: ReasonViz__GraphTypes.edge, ~key) => {
+  Js.Dict.get(edge.state, key);
+};
+
 let setEdgeState = (edge, ~key, ~value) => {
-  RE.setState(edge, ~key, ~value);
-  Event.dispatch(edge.graph.events.onEdgeStateUpdated, (edge, key, value));
+  switch (getEdgeState(edge, ~key)) {
+  | None =>
+    RE.setState(edge, ~key, ~value);
+    Event.dispatch(
+      edge.graph.events.onEdgeStateUpdated,
+      (edge, key, value, ""),
+    );
+  | Some(oldValue) when oldValue != value =>
+    RE.setState(edge, ~key, ~value);
+    Event.dispatch(
+      edge.graph.events.onEdgeStateUpdated,
+      (edge, key, value, oldValue),
+    );
+  | _ => ()
+  };
 };
 
 let setNodeState = (node, ~key, ~value) => {
-  RN.setState(node, ~key, ~value);
-  Event.dispatch(node.graph.events.onNodeStateUpdated, (node, key, value));
+  switch (getNodeState(node, ~key)) {
+  | None =>
+    RN.setState(node, ~key, ~value);
+    Event.dispatch(
+      node.graph.events.onNodeStateUpdated,
+      (node, key, value, ""),
+    );
+  | Some(oldValue) when oldValue != value =>
+    RN.setState(node, ~key, ~value);
+    Event.dispatch(
+      node.graph.events.onNodeStateUpdated,
+      (node, key, value, oldValue),
+    );
+  | _ => ()
+  };
 };
 
 let findNodesByState = (g: t, key, value) => {

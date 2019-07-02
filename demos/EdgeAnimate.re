@@ -266,7 +266,7 @@ let stopAnimate = (edge: GraphTypes.edge) => {
 
 Event.subscribe(
   g.events.onNodeStateUpdated,
-  ((node, key, value)) => {
+  ((node, key, value, _)) => {
     let animateEdges = edges => {
       switch (key, value) {
       | ("animate", "running") => edges |> List.iter(animateCircleEdge)

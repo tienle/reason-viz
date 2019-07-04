@@ -222,7 +222,26 @@ and events = {
   onEdgeDragEnter: Event.t(edgeEvent),
   onEdgeDragLeave: Event.t(edgeEvent),
   onEdgeDrop: Event.t(edgeEvent),
+  onClick: Event.t(generalEvent),
+  onMouseDown: Event.t(generalEvent),
+  onMouseUp: Event.t(generalEvent),
+  onDblClick: Event.t(generalEvent),
+  onContextMenu: Event.t(generalEvent),
+  onMouseEnter: Event.t(generalEvent),
+  onMouseOut: Event.t(generalEvent),
+  onMouseOver: Event.t(generalEvent),
+  onMouseMove: Event.t(generalEvent),
+  onMouseLeave: Event.t(generalEvent),
+  onDragStart: Event.t(generalEvent),
+  onDragEnd: Event.t(generalEvent),
+  onDrag: Event.t(generalEvent),
+  onDragEnter: Event.t(generalEvent),
+  onDragLeave: Event.t(generalEvent),
+  onDrop: Event.t(generalEvent),
 }
 and canvasEvent = (event, Canvas.t)
 and nodeEvent = (event, node)
-and edgeEvent = (event, edge);
+and edgeEvent = (event, edge)
+and generalEvent = (event, option(generalItem))
+and generalItem = [ | `Edge(edge) | `Node(node)];
+

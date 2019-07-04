@@ -70,6 +70,22 @@ let createEmptyEvents = (): ReasonViz__GraphTypes.events => {
   onEdgeDragEnter: Event.create(),
   onEdgeDragLeave: Event.create(),
   onEdgeDrop: Event.create(),
+  onClick: Event.create(),
+  onMouseDown: Event.create(),
+  onMouseUp: Event.create(),
+  onDblClick: Event.create(),
+  onContextMenu: Event.create(),
+  onMouseEnter: Event.create(),
+  onMouseOut: Event.create(),
+  onMouseOver: Event.create(),
+  onMouseMove: Event.create(),
+  onMouseLeave: Event.create(),
+  onDragStart: Event.create(),
+  onDragEnd: Event.create(),
+  onDrag: Event.create(),
+  onDragEnter: Event.create(),
+  onDragLeave: Event.create(),
+  onDrop: Event.create(),
 };
 
 external castToNode: 'a => ReasonViz__Node.t = "%identity";
@@ -161,6 +177,28 @@ let emitEdgeEvent = (g: t, eventType, payload) => {
   };
 };
 
+let emitGeneralEvent = (g: t, eventType, payload) => {
+  switch (eventType) {
+  | "click" => Event.dispatch(g.events.onClick, payload)
+  | "mousedown" => Event.dispatch(g.events.onMouseDown, payload)
+  | "mouseup" => Event.dispatch(g.events.onMouseUp, payload)
+  | "dblclick" => Event.dispatch(g.events.onDblClick, payload)
+  | "contextmenu" => Event.dispatch(g.events.onContextMenu, payload)
+  | "mouseenter" => Event.dispatch(g.events.onMouseEnter, payload)
+  | "mouseout" => Event.dispatch(g.events.onMouseOut, payload)
+  | "mouseover" => Event.dispatch(g.events.onMouseOver, payload)
+  | "mousemove" => Event.dispatch(g.events.onMouseMove, payload)
+  | "mouseleave" => Event.dispatch(g.events.onMouseLeave, payload)
+  | "dragstart" => Event.dispatch(g.events.onDragStart, payload)
+  | "dragend" => Event.dispatch(g.events.onDragEnd, payload)
+  | "drag" => Event.dispatch(g.events.onDrag, payload)
+  | "dragenter" => Event.dispatch(g.events.onDragEnter, payload)
+  | "dragleave" => Event.dispatch(g.events.onDragLeave, payload)
+  | "drop" => Event.dispatch(g.events.onDrop, payload)
+  | _ => raise(EmitFailure("Failed to emit event:" ++ eventType))
+  };
+};
+
 let preItem = ref(None);
 
 let handleMouseMove = (~g, ~item, ~event) => {
@@ -232,6 +270,7 @@ let canvasHandler = (g: t, e) => {
     emitCanvasEvent(g, eventType, (event, canvas));
   } else {
     let item = getItemRoot(target);
+    emitGeneralEvent(g, eventType, (event, item));
     let entranceEvent =
       Util.String.indexOf(eventType, "leave") > (-1)
       || Util.String.indexOf(eventType, "enter") > (-1);

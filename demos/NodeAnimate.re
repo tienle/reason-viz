@@ -218,6 +218,23 @@ ReasonViz.NodeShape.register(
 ReasonViz.NodeShape.register("circle-animate", (module CircleAnimate));
 ReasonViz.NodeShape.register("inner-animate", (module InnerAnimate));
 
+Event.subscribe(
+  g.events.onNodeMouseEnter,
+  ((e, node)) => {
+    Js.log("node:mouseenter")
+    Js.log(e);
+    Js.log(node);
+  });
+
+Event.subscribe(
+  g.events.onMouseEnter,
+  ((e, item)) => {
+    Js.log("mouseenter")
+    Js.log(e);
+    Js.log(item);
+  });
+
+
 nodes |> Graph.addNodes(g);
 edges |> Graph.addEdges(g);
 Graph.render(g);
